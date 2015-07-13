@@ -1,14 +1,12 @@
 __author__ = 'Joakim'
-import MeterUnitGateway
+from MeterUnitGateway import MeterUnitGateway
 from Networking import Networker
 
 
-class Simulator(object):
-    def __init__(self):
-        meters = MeterUnitGateway()
-        meters.listen()
-        networker = Networker()
-        networker.receive()
+meters = MeterUnitGateway()
+# meters.listen()
+networker = Networker()
+networker.receive()
 
 """
 respond to client

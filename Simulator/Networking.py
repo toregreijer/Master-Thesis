@@ -23,18 +23,20 @@ class Networker(object):
         s = self.s
         s.bind((self.local_host, self.port))
         s.listen(5)
-        # operations = 0
-        while 1:     # operations < 3:
-            # establish a connection
-            client_socket, addr = s.accept()
+        operations = 0
+        # establish a connection
+        print("Accepting!")
+        client_socket, addr = s.accept()
+        while operations < 10:
+
             # receive 1024 bytes
+            print("Receiving!")
             tmp = client_socket.recv(1024)
             # print(tmp)
-            # tmp = ":".join("{:02x}".format(c) for c in tmp)
+            tmp = ":".join("{:02x}".format(c) for c in tmp)
             # ALTERNATIVE ':'.join(x.encode('hex') for x in tmp)
 
-
-            client_socket.sendall(ack_response)
+            client_socket.sendall(b'\xE5')
             # debug printouts
             # print('0xE5'.encode('utf-8'))
             # print(int('0xE5', 16))
@@ -48,9 +50,10 @@ class Networker(object):
             # print some debug info
             print("Got a connection from %s, saying %s" % (str(addr), tmp))
             # close the socket
-            client_socket.close()
+            # client_socket.close()
             # increment operations
-            # operations += 1
+            operations += 1
+        client_socket.close()
         s.close()
 
 """

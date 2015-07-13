@@ -8,9 +8,9 @@ class MeterUnitGateway(object):
     id_array = {1: 1000, 2: 2000, 3: 3000}
 
     def __init__(self):
-        while 1:
-            self.consume(randint(1, 2))
-            self.parse_data()
+        # while 1:
+        self.consume(randint(1, 2))
+        self.parse_data()
 
     def consume(self, unit_id):
         self.id_array[unit_id] += 100
