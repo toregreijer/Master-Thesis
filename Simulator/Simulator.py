@@ -28,15 +28,18 @@ if __name__ == '__main__':
     nm = NetworkManager()
     mu = MeterUnit(1)
     while True:
-        socket, address = nm.accept_connection()
+        tmp_socket, address = nm.accept_connection()
         # receive PACKET_SIZE bytes
-        tmp = socket.recv(TELEGRAM_SIZE)
+        tmp = tmp_socket.recv(TELEGRAM_SIZE)
         while tmp is not None:
-            tmp = ':'.join(':02x}'.format(c) for c in tmp)
-            print("Received: %s from %s" % (tmp, (str(address))))
+            print(tmp)
+            tmp = ':'.join('{:02x}'.format(c) for c in tmp)
+            print('Received: %s from %s' % (tmp, (str(address))))
             # respond to client
-            socket.sendall(MBUS_ACK)
-        socket.close()
+            tmp_socket.sendall(MBUS_ACK)
+            tmp = tmp_socket.recv(TELEGRAM_SIZE)
+        tmp_socket.close()
+        nm.close_the_socket()
 
 # ack_response = b'\xE5'
 # rsp_ud = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START

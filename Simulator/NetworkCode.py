@@ -22,13 +22,16 @@ class NetworkManager(object):
     def accept_connection(self):
         s = self.s
         s.bind((self.local_host, self.port))
-        s.listen(5)
+        s.listen(1)
         # operations = 0
         # establish a connection
         print('Accepting connections now!')
         client_socket, addr = s.accept()
         # s.close()
         return client_socket, addr
+
+    def close_the_socket(self):
+        self.s.close()
 
         # while operations < 5:
 
