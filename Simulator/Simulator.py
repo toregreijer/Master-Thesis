@@ -1,12 +1,29 @@
 __author__ = 'Joakim'
-from MeterUnitGateway import MeterUnitGateway
-from Networking import Networker
+from NetworkCode import NetworkManager
+from random import randint
+
+# Init: create a bunch of MeterUnits, have some mainloop where they
+# consume() in parallel, and the networkmanager can read their values and
+# respond to incoming queries
+
+nm = NetworkManager()
+nm.receive()
 
 
-meters = MeterUnitGateway()
-# meters.listen()
-networker = Networker()
-networker.receive()
+class MeterUnit(object):
+    value = 0
+    id = 0
+
+    def __init__(self, id_number=0):
+        self.value = randint(1000, 10000)
+        self.id = id_number
+
+    def consume(self):
+        self.value += randint(1, 100)
+
+    def get_value(self):
+        return self.value
+
 
 """
 respond to client
