@@ -31,10 +31,11 @@ if __name__ == '__main__':
         socket, address = nm.accept_connection()
         # receive PACKET_SIZE bytes
         tmp = socket.recv(TELEGRAM_SIZE)
-        # tmp = ':'.join(':02x}'.format(c) for c in tmp)
-        print("Received: %s from %s" % (tmp, (str(address))))
-        # respond to client
-        socket.sendall(MBUS_ACK)
+        while tmp is not None:
+            tmp = ':'.join(':02x}'.format(c) for c in tmp)
+            print("Received: %s from %s" % (tmp, (str(address))))
+            # respond to client
+            socket.sendall(MBUS_ACK)
         socket.close()
 
 # ack_response = b'\xE5'
