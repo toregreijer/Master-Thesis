@@ -4,8 +4,8 @@ import socket
 
 class NetworkManager(object):
     port = 11111
-    local_host = ""
-    remote_host = ""
+    local_host = ''
+    remote_host = ''
     s = socket
 
     def __init__(self, target_host='127.0.0.1'):
@@ -19,39 +19,42 @@ class NetworkManager(object):
         s.sendall(data)
         s.close()
 
-    def receive(self):
+    def accept_connection(self):
         s = self.s
         s.bind((self.local_host, self.port))
         s.listen(5)
-        operations = 0
+        # operations = 0
         # establish a connection
-        print("Accepting!")
+        print('Accepting connections now!')
         client_socket, addr = s.accept()
-        while operations < 10:
+        # s.close()
+        return client_socket, addr
 
-            # receive 1024 bytes
-            # print("Receiving!")
-            tmp = client_socket.recv(1024)
-            # print(tmp)
-            tmp = ":".join("{:02x}".format(c) for c in tmp)
-            # ALTERNATIVE ':'.join(x.encode('hex') for x in tmp)
+        # while operations < 5:
 
-            client_socket.sendall(b'\xE5')
-            # debug printouts
-            # print('0xE5'.encode('utf-8'))
-            # print(int('0xE5', 16))
-            # print(hex(229))
+        # receive 1024 bytes
+        # print("Receiving!")
+        # tmp = client_socket.recv(255)
+        # print(tmp)
+        # tmp = ':'.join(':02x}'.format(c) for c in tmp)
+        # ALTERNATIVE ':'.join(x.encode('hex') for x in tmp)
 
-            # break if we didn't receive anything
-            if not tmp:
-                client_socket.close()
-                break
+        # client_socket.sendall(b'\xE5')
+        # debug printouts
+        # print('0xE5'.encode('utf-8'))
+        # print(int('0xE5', 16))
+        # print(hex(229))
 
-            # print some debug info
-            print("Got a connection from %s, saying %s" % (str(addr), tmp))
-            # close the socket
-            # client_socket.close()
-            # increment operations
-            operations += 1
-        client_socket.close()
-        s.close()
+        # break if we didn't receive anything
+        # if not tmp:
+        #     client_socket.close()
+        #     break
+
+        # print some debug info
+        # print('Got a connection from %s, saying %s' % (str(addr), tmp))
+        # close the socket
+        # client_socket.close()
+        # increment operations
+        # operations += 1
+        # client_socket.close()
+
