@@ -1,63 +1,38 @@
 __author__ = 'Joakim'
 import socket
+import select
 
 
 class NetworkManager(object):
     port = 11111
     local_host = ''
     remote_host = ''
-    s = socket
+    serversocket = socket
 
     def __init__(self, target_host='127.0.0.1'):
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.localhost = socket.gethostname()
         self.remote_host = target_host
+        self.serversocket.bind((self.local_host, self.port))
+        self.serversocket.listen(10)
+        self.serversocket.setblocking(1)
 
     def send(self, data):
-        s = self.s
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.remote_host, self.port))
         s.sendall(data)
         s.close()
 
     def accept_connection(self):
-        s = self.s
-        s.bind((self.local_host, self.port))
-        s.listen(1)
-        # operations = 0
-        # establish a connection
-        print('Accepting connections now!')
-        client_socket, addr = s.accept()
-        # s.close()
-        return client_socket, addr
+        s = self.serversocket
+        r, w, err = select.select([s], [], [], 0)
+        if not r:
+            return 0, 0
+        else:
+            print('Accepting connections now!')
+            (client_socket, addr) = s.accept()
+            client_socket.setblocking(1)
+            return client_socket, addr
 
     def close_the_socket(self):
-        self.s.close()
-
-        # while operations < 5:
-
-        # receive 1024 bytes
-        # print("Receiving!")
-        # tmp = client_socket.recv(255)
-        # print(tmp)
-        # tmp = ':'.join(':02x}'.format(c) for c in tmp)
-        # ALTERNATIVE ':'.join(x.encode('hex') for x in tmp)
-
-        # client_socket.sendall(b'\xE5')
-        # debug printouts
-        # print('0xE5'.encode('utf-8'))
-        # print(int('0xE5', 16))
-        # print(hex(229))
-
-        # break if we didn't receive anything
-        # if not tmp:
-        #     client_socket.close()
-        #     break
-
-        # print some debug info
-        # print('Got a connection from %s, saying %s' % (str(addr), tmp))
-        # close the socket
-        # client_socket.close()
-        # increment operations
-        # operations += 1
-        # client_socket.close()
-
+        self.serversocket.close()
