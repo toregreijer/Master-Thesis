@@ -23,27 +23,17 @@
     <favorites_list name="Simulator" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5">
+    <splitter split-orientation="horizontal" split-proportion="0.47225574">
       <split-first>
         <leaf>
           <file leaf-file-name="NetworkCode.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/NetworkCode.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.4117647">
-                  <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+                <state vertical-scroll-proportion="0.5882353">
+                  <caret line="30" column="13" selection-start-line="30" selection-start-column="13" selection-end-line="30" selection-end-column="13" />
                   <folding>
                     <element signature="e#22#35#0" expanded="true" />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="idna.py" pinned="false" current-in-tab="false">
-            <entry file="file://C:/Python34/Lib/encodings/idna.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.0">
-                  <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -55,8 +45,8 @@
           <file leaf-file-name="Simulator.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/Simulator.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.43252596">
-                  <caret line="53" column="17" selection-start-line="53" selection-start-column="17" selection-end-line="53" selection-end-column="17" />
+                <state vertical-scroll-proportion="0.39215687">
+                  <caret line="50" column="25" selection-start-line="50" selection-start-column="25" selection-end-line="50" selection-end-column="25" />
                   <folding>
                     <element signature="e#22#60#0" expanded="true" />
                   </folding>
@@ -422,7 +412,19 @@
       <option name="project" value="LOCAL" />
       <updated>1439815247932</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Made a list of simulated meter units. Simultator can only accept one connection at the time, maybe fix in the future, low prio.">
+      <created>1439815514834</created>
+      <option name="number" value="00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1439815514834</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Fixed up debug output.">
+      <created>1439815717293</created>
+      <option name="number" value="00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1439815717293</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TodoView">
@@ -477,7 +479,9 @@
     <MESSAGE value="network receive -&gt; accept_connection" />
     <MESSAGE value="fixed receiving" />
     <MESSAGE value="Finished nonblocking simulator, but it's very CPU consuming." />
-    <option name="LAST_COMMIT_MESSAGE" value="Finished nonblocking simulator, but it's very CPU consuming." />
+    <MESSAGE value="Made a list of simulated meter units. Simultator can only accept one connection at the time, maybe fix in the future, low prio." />
+    <MESSAGE value="Fixed up debug output." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixed up debug output." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -674,14 +678,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://C:/Python34/Lib/encodings/idna.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -746,22 +742,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/NetworkCode.py">
+    <entry file="file://$PROJECT_DIR$/Simulator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.4117647">
-          <caret line="21" column="20" selection-start-line="21" selection-start-column="20" selection-end-line="21" selection-end-column="20" />
+        <state vertical-scroll-proportion="0.39215687">
+          <caret line="50" column="25" selection-start-line="50" selection-start-column="25" selection-end-line="50" selection-end-column="25" />
           <folding>
-            <element signature="e#22#35#0" expanded="true" />
+            <element signature="e#22#60#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Simulator.py">
+    <entry file="file://C:/Python34/Lib/encodings/idna.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.43252596">
-          <caret line="53" column="17" selection-start-line="53" selection-start-column="17" selection-end-line="53" selection-end-column="17" />
+        <state vertical-scroll-proportion="0.19607843">
+          <caret line="153" column="0" selection-start-line="153" selection-start-column="0" selection-end-line="153" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/NetworkCode.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.5882353">
+          <caret line="30" column="13" selection-start-line="30" selection-start-column="13" selection-end-line="30" selection-end-column="13" />
           <folding>
-            <element signature="e#22#60#0" expanded="true" />
+            <element signature="e#22#35#0" expanded="true" />
           </folding>
         </state>
       </provider>

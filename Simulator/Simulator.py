@@ -50,24 +50,18 @@ if __name__ == '__main__':
     meter_units = []
     for x in range(1, 3):
         meter_units.append(MeterUnit(x, 'thread_name', x))
-    # mu2 = MeterUnit(2, 't2', 2)
-    # mu3 = MeterUnit(3, 't3', 3)
     for mu in meter_units:
         mu.start()
-    # mu2.start()
-    # mu3.start()
     while True:
         client_socket, address = nm.accept_connection()
         if client_socket is 0:
             continue
-        # receive PACKET_SIZE bytes
+        # receive TELEGRAM_SIZE bytes
         telegram = client_socket.recv(TELEGRAM_SIZE)
         while telegram:
             # print(telegram)
             for mu in meter_units:
                 print('Unit #%s: %s' % (mu.get_id(), mu.get_value()))
-            # print(mu2.get_value())
-            # print(mu3.get_value())
             telegram = ':'.join('{:02x}'.format(c) for c in telegram)
             print('Received: %s from %s' % (telegram, (str(address))))
 
@@ -77,16 +71,5 @@ if __name__ == '__main__':
             else:
                 client_socket.sendall(MBUS_DATA)
             telegram = client_socket.recv(TELEGRAM_SIZE)
-            # telegram = ''
-
         client_socket.close()
     nm.close_the_socket()
-
-# ack_response = b'\xE5'
-# rsp_ud = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
-#          b'\x08\x01\x72'               # CONTROL:ADDRESS:CONTROL_INFO
-#          b'\x44\x55\x66\x77\x88\x99'   # ACTIVE_DATA
-#          b'\x11\x02\x00\x00\x00\x00'   # MORE DATA
-#          b'\x86\x00\x82\xFF\x80\xFF'   # MORE DATA
-#          b'\x00\x00\x00\x00\x00\x00'   # MORE DATA
-#          b'\xDA\x0F\xCC\x16')          # DATA:DATA:CHECKSUM:STOP
