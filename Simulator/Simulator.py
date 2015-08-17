@@ -36,6 +36,9 @@ class MeterUnit(threading.Thread):
     def get_value(self):
         return self.value
 
+    def get_id(self):
+        return self.id
+
     def run(self):
         while self.value < 15000:
             self.consume()
@@ -60,9 +63,9 @@ if __name__ == '__main__':
         # receive PACKET_SIZE bytes
         telegram = client_socket.recv(TELEGRAM_SIZE)
         while telegram:
-            print(telegram)
+            # print(telegram)
             for mu in meter_units:
-                print(mu.get_value())
+                print('Unit #%s: %s' % (mu.get_id(), mu.get_value()))
             # print(mu2.get_value())
             # print(mu3.get_value())
             telegram = ':'.join('{:02x}'.format(c) for c in telegram)
