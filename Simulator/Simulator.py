@@ -44,10 +44,13 @@ class MeterUnit(threading.Thread):
 
 if __name__ == '__main__':
     nm = NetworkManager()
-    mu1 = MeterUnit(1, 't1', 1)
+    meter_units = []
+    for x in range(1, 3):
+        meter_units.append(MeterUnit(x, 'thread_name', x))
     # mu2 = MeterUnit(2, 't2', 2)
     # mu3 = MeterUnit(3, 't3', 3)
-    mu1.start()
+    for mu in meter_units:
+        mu.start()
     # mu2.start()
     # mu3.start()
     while True:
@@ -58,7 +61,8 @@ if __name__ == '__main__':
         telegram = client_socket.recv(TELEGRAM_SIZE)
         while telegram:
             print(telegram)
-            print(mu1.get_value())
+            for mu in meter_units:
+                print(mu.get_value())
             # print(mu2.get_value())
             # print(mu3.get_value())
             telegram = ':'.join('{:02x}'.format(c) for c in telegram)
