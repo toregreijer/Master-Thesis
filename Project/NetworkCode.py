@@ -13,15 +13,17 @@ class NetworkManager(object):
         self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.localhost = socket.gethostname()
         self.remote_host = target_host
-        self.serversocket.bind((self.local_host, self.port))
-        self.serversocket.listen(10)
-        self.serversocket.setblocking(1)
+        # self.serversocket.bind((self.local_host, self.port))
+        # self.serversocket.listen(10)
+        # self.serversocket.setblocking(1)
 
     def send(self, data):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.remote_host, self.port))
         s.sendall(data)
+        tmp = s.recv(255)
         s.close()
+        return tmp
 
     def accept_connection(self):
         s = self.serversocket
