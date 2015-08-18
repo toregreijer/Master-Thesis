@@ -47,6 +47,7 @@ class MeterUnit(threading.Thread):
 
 if __name__ == '__main__':
     nm = NetworkManager()
+    nm.open_server_socket()
     meter_units = []
     for x in range(1, 3):
         meter_units.append(MeterUnit(x, 'thread_name', x))
@@ -72,4 +73,4 @@ if __name__ == '__main__':
                 client_socket.sendall(MBUS_DATA)
             telegram = client_socket.recv(TELEGRAM_SIZE)
         client_socket.close()
-    nm.close_the_socket()
+    nm.close_server_socket()
