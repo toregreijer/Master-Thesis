@@ -5,6 +5,7 @@
       <w>remotesocket</w>
       <w>serversocket</w>
       <w>setblocking</w>
+      <w>sqlite</w>
     </words>
   </dictionary>
 </component>
