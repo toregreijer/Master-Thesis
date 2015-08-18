@@ -14,5 +14,8 @@ MBUS_DATA = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
 
 if __name__ == '__main__':
     nm = NetworkManager()
+    nm.open_remote_socket()
     tmp = nm.send(b'\x40\x10\x00\x40\x16')
     print('Sent stuff, got [%s] back!' % tmp)
+    nm.send('0')
+    nm.close_remote_socket()
