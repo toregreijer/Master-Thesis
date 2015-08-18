@@ -4,6 +4,8 @@ from NetworkCode import NetworkManager
 remote_host = '192.168.0.125'
 TELEGRAM_SIZE = 255
 MBUS_ACK = b'\xE5'
+MBUS_SND_NKE = b'\x10\x40\x00\x40\x16'
+MBUS_RQD_UD = b'\x00'
 MBUS_DATA = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
              b'\x08\x01\x72'               # CONTROL:ADDRESS:CONTROL_INFO
              b'\x44\x55\x66\x77\x88\x99'   # ACTIVE_DATA
@@ -13,10 +15,28 @@ MBUS_DATA = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
              b'\xDA\x0F\xCC\x16')
 
 if __name__ == '__main__':
+    # FIND AND OPEN THE DATABASE,
+    # IF NONE EXISTS, CREATE A NEW ONE.
+    # TODO: CREATE DATABASE!
+    #
+    #
+    # POLLING FOR DATA
+    # OPEN A CONNECTION TO THE MBUS MASTER
     nm = NetworkManager()
     nm.open_remote_socket()
-    tmp = nm.send(b'\x10\x40\x00\x40\x16')
+    # SEND A PING TO MBUS ADDRESS 0
+    tmp = nm.send(MBUS_SND_NKE)
+    tmp = ':'.join('{:02x}'.format(c) for c in tmp)
     print('Sent stuff, got [%s] back!' % tmp)
-    nm.send(b'\x00')
+    # SEND 0 TO MBUS MASTER
+    tmp = nm.send(b'\x00')
+    tmp = ':'.join('{:02x}'.format(c) for c in tmp)
+    print('Sent stuff, got [%s] back!' % tmp)
+    # SEND A REQUEST FOR DATA TO THE MBUS MASTER,
+    # FOR UNIT AT ADDRESS X
+    #
+    # STORE THE DATA RECEIVED AT THE CORRECT PART OF THE DATABASE
+    # TODO: CREATE DB CONNECTION AND STORE DATA
+    # CLOSE DOWN THE CONNECTION
     nm.close_remote_socket()
     exit(0)
