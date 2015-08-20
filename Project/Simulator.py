@@ -4,11 +4,13 @@ from random import randint
 from time import sleep
 import threading
 import MBus
+import sys
 
 
 class MeterUnit(threading.Thread):
     value = 0
     id = 0
+    exit_flag = 0
 
     def __init__(self, thread_id, name, id_number=0):
         threading.Thread.__init__(self)
@@ -27,37 +29,51 @@ class MeterUnit(threading.Thread):
         return self.id
 
     def run(self):
-        while self.value < 15000:
+        while not self.exit_flag and self.value < 15000:
             self.consume()
-            sleep(5)
-    # TODO: Catch keyboard interrupts and close down the simulator and all its threads safely.
+            sleep(1)
+
+    def shutdown(self):
+        self.exit_flag = 1
+
 
 if __name__ == '__main__':
-    nm = NetworkManager()
-    nm.open_server_socket()
-    meter_units = []
-    for x in range(1, 3):
-        meter_units.append(MeterUnit(x, 'thread_name', x))
-    for mu in meter_units:
-        mu.start()
-    while True:
-        client_socket, address = nm.accept_connection()
-        if client_socket is 0:
-            continue
-        # receive TELEGRAM_SIZE bytes
-        telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
-        while telegram:
-            # print(telegram)
-            for mu in meter_units:
-                print('Unit #%s: %s' % (mu.get_id(), hex(mu.get_value())))
-            telegram = ':'.join('{:02x}'.format(c) for c in telegram)
-            print('Received: %s from %s' % (telegram, (str(address))))
-
-            # respond to client
-            if telegram.startswith('10:40'):
-                client_socket.sendall(MBus.ACK)
-            elif telegram.startswith('10:5'):
-                client_socket.sendall(MBus.RSP_UD)
+    try:
+        nm = NetworkManager()
+        nm.open_server_socket()
+        meter_units = []
+        for x in range(1, 3):
+            meter_units.append(MeterUnit(x, 'thread_name', x))
+        for mu in meter_units:
+            mu.setDaemon(1)
+            mu.start()
+        while True:
+            client_socket, address = nm.accept_connection()
+            if client_socket is 0:
+                continue
+            # receive TELEGRAM_SIZE bytes
             telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
-        client_socket.close()
-    nm.close_server_socket()
+            while telegram:
+                # print(telegram)
+                for mu in meter_units:
+                    print('Unit #{id}: {val}'.format(id=mu.get_id(), val=mu.get_value()))
+                telegram = ':'.join('{:02x}'.format(c) for c in telegram)
+                print('Received: %s from %s' % (telegram, (str(address))))
+
+                # respond to client
+                if telegram.startswith('10:4'):
+                    client_socket.sendall(MBus.ACK)
+                elif telegram.startswith('10:5'):
+                    client_socket.sendall(MBus.RSP_UD)
+                telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
+            client_socket.close()
+        nm.close_server_socket()
+    except KeyboardInterrupt:
+        print('\n\nInterrupted by user, exiting...')
+        nm.close_server_socket()
+        for mu in meter_units:
+            mu.shutdown()
+            print('Waiting for {tn} to finish...'.format(tn=mu.get_id()))
+            mu.join()
+            print('{tn} finished successfully.'.format(tn=mu.get_id()))
+        sys.exit(1)
