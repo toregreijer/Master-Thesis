@@ -36,18 +36,17 @@ class MeterUnit(threading.Thread):
     def shutdown(self):
         self.exit_flag = 1
 
-
 if __name__ == '__main__':
-    try:
-        nm = NetworkManager()
-        nm.open_server_socket()
-        meter_units = []
-        for x in range(1, 3):
-            meter_units.append(MeterUnit(x, 'thread_name', x))
-        for mu in meter_units:
-            mu.setDaemon(1)
-            mu.start()
-        while True:
+    nm = NetworkManager()
+    nm.open_server_socket()
+    meter_units = []
+    for x in range(1, 3):
+        meter_units.append(MeterUnit(x, 'thread_name', x))
+    for mu in meter_units:
+        mu.setDaemon(1)
+        mu.start()
+    while True:
+        try:
             client_socket, address = nm.accept_connection()
             if client_socket is 0:
                 continue
@@ -66,14 +65,14 @@ if __name__ == '__main__':
                 elif telegram.startswith('10:5'):
                     client_socket.sendall(MBus.RSP_UD)
                 telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
-            client_socket.close()
-        nm.close_server_socket()
-    except KeyboardInterrupt:
-        print('\n\nInterrupted by user, exiting...')
-        nm.close_server_socket()
-        for mu in meter_units:
-            mu.shutdown()
-            print('Waiting for {tn} to finish...'.format(tn=mu.get_id()))
-            mu.join()
-            print('{tn} finished successfully.'.format(tn=mu.get_id()))
-        sys.exit(1)
+        except KeyboardInterrupt:
+            print('\n\nInterrupted by user, exiting...')
+            nm.close_server_socket()
+            for mu in meter_units:
+                mu.shutdown()
+                print('Waiting for {tn} to finish...'.format(tn=mu.get_id()))
+                mu.join()
+                print('{tn} finished successfully.'.format(tn=mu.get_id()))
+            sys.exit(1)
+        client_socket.close()
+    nm.close_server_socket()
