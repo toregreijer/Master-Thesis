@@ -3,20 +3,7 @@ from NetworkCode import NetworkManager
 from random import randint
 from time import sleep
 import threading
-
-# Init: create a bunch of MeterUnits, have some mainloop where they
-# consume() in parallel, and the network manager can read their values and
-# respond to incoming queries
-
-TELEGRAM_SIZE = 255
-MBUS_ACK = b'\xE5'
-MBUS_DATA = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
-             b'\x08\x01\x72'               # CONTROL:ADDRESS:CONTROL_INFO
-             b'\x44\x55\x66\x77\x88\x99'   # ACTIVE_DATA
-             # b'\x11\x02\x00\x00\x00\x00'   # MORE DATA
-             # b'\x86\x00\x82\xFF\x80\xFF'   # MORE DATA
-             # b'\x00\x00\x00\x00\x00\x00'   # MORE DATA
-             b'\xDA\x0F\xCC\x16')
+import MBus
 
 
 class MeterUnit(threading.Thread):
@@ -43,7 +30,7 @@ class MeterUnit(threading.Thread):
         while self.value < 15000:
             self.consume()
             sleep(5)
-
+    # TODO: Catch keyboard interrupts and close down the simulator and all its threads safely.
 
 if __name__ == '__main__':
     nm = NetworkManager()
@@ -58,19 +45,19 @@ if __name__ == '__main__':
         if client_socket is 0:
             continue
         # receive TELEGRAM_SIZE bytes
-        telegram = client_socket.recv(TELEGRAM_SIZE)
+        telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
         while telegram:
             # print(telegram)
             for mu in meter_units:
-                print('Unit #%s: %s' % (mu.get_id(), mu.get_value()))
+                print('Unit #%s: %s' % (mu.get_id(), hex(mu.get_value())))
             telegram = ':'.join('{:02x}'.format(c) for c in telegram)
             print('Received: %s from %s' % (telegram, (str(address))))
 
             # respond to client
             if telegram.startswith('10:40'):
-                client_socket.sendall(MBUS_ACK)
-            else:
-                client_socket.sendall(MBUS_DATA)
-            telegram = client_socket.recv(TELEGRAM_SIZE)
+                client_socket.sendall(MBus.ACK)
+            elif telegram.startswith('10:5'):
+                client_socket.sendall(MBus.RSP_UD)
+            telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
         client_socket.close()
     nm.close_server_socket()
