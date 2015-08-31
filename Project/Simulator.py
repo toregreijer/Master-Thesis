@@ -45,6 +45,7 @@ if __name__ == '__main__':
     for mu in meter_units:
         mu.setDaemon(1)
         mu.start()
+        # TODO: Print out some text informing the user that the simulator has started and is running. With X threads.
     while True:
         try:
             client_socket, address = nm.accept_connection()

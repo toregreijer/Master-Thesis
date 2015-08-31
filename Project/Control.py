@@ -1,26 +1,19 @@
 __author__ = 'joakim'
 from NetworkCode import NetworkManager
+from DatabaseCode import open_and_store, setup_db
 import sys
 import MBus
 
-
-if sys.version_info < (3,):
-    def b(x):
-        return x
-else:
-    import codecs
-
-    def b(x):
-        return codecs.latin_1_encode(x)[0]
-
-
-remote_host = '192.168.0.125'
+remote_host = '192.168.0.196'
 
 if __name__ == '__main__':
     try:
+        #var = input('Welcome to the Control Unit, shall I proceed?\n')
+        # SET UP THE DATABASE FOR FUTURE USE
+        setup_db()
         # POLLING FOR DATA
         # OPEN A CONNECTION TO THE MBUS MASTER
-        nm = NetworkManager()
+        nm = NetworkManager(remote_host)
         nm.open_remote_socket()
         # SEND A PING TO MBUS ADDRESS 0
         addr = 00
@@ -32,10 +25,12 @@ if __name__ == '__main__':
         # FOR UNIT AT ADDRESS X
         #
         # STORE THE DATA RECEIVED AT THE CORRECT PART OF THE DATABASE
-        # TODO: CREATE DB CONNECTION AND STORE DATA
+
+        open_and_store(tmp)
+
         # CLOSE DOWN THE CONNECTION
         nm.close_remote_socket()
         exit(0)
     except ConnectionRefusedError:
-        print('Couldn\'t connect! Exiting...')
+        print('Could not connect! Exiting...')
         sys.exit(0)
