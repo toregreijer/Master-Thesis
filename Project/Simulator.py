@@ -1,10 +1,11 @@
-__author__ = 'Joakim'
 from NetworkCode import NetworkManager
 from random import randint
 from time import sleep
 import threading
 import MBus
 import sys
+
+NUM_UNITS = 3
 
 
 class MeterUnit(threading.Thread):
@@ -37,15 +38,18 @@ class MeterUnit(threading.Thread):
         self.exit_flag = 1
 
 if __name__ == '__main__':
+    print('Starting simulator!')
     nm = NetworkManager()
     nm.open_server_socket()
+    print('Listening for incoming connections!')
     meter_units = []
-    for x in range(1, 3):
+    print('Starting {NU} meter units'.format(NU=NUM_UNITS))
+    for x in range(1, NUM_UNITS):
         meter_units.append(MeterUnit(x, 'thread_name', x))
     for mu in meter_units:
         mu.setDaemon(1)
         mu.start()
-        # TODO: Print out some text informing the user that the simulator has started and is running. With X threads.
+    print('Simulator is running with {NU} units(threads), waiting for requests...'.format(NU=NUM_UNITS))
     while True:
         try:
             client_socket, address = nm.accept_connection()

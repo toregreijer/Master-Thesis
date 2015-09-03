@@ -1,4 +1,3 @@
-__author__ = 'joakim'
 import sqlite3
 
 sqlite_file = 'the_great_db.sqlite'
@@ -28,7 +27,7 @@ def setup_db():
 def open_and_store(data):
     conn, c = connect()
     c.execute('INSERT INTO {tn} ({fn1}, {fn3}) VALUES ("house001", ?)'
-              .format(tn=table1, fn1=field1, fn2=field2, fn3=field3), (data,))
+              .format(tn=table1, fn1=field1, fn3=field3), (data,))
     close(conn)
 
 
@@ -45,7 +44,7 @@ def close(conn):
     conn.close()
 
 '''
-# Sebastian Raschka 2014
+
 # Prints Information of a SQLite database.
 
 # E.g.,
@@ -88,7 +87,7 @@ def total_rows(cursor, table_name, print_out=False):
 
 def table_col_info(cursor, table_name, print_out=False):
     """
-       Returns a list of tuples with column informations:
+       Returns a list of tuples with column information:
       (id, name, type, notnull, default_value, primary_key)
 
     """

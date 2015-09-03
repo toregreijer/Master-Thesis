@@ -1,6 +1,3 @@
-__author__ = 'joakim'
-
-
 TELEGRAM_SIZE = 128
 ACK = b'\xE5'
 SND_NKE = b'\x10\x40\x00\x40\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP

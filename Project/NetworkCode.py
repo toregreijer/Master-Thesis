@@ -1,4 +1,3 @@
-__author__ = 'Joakim'
 import socket
 import select
 

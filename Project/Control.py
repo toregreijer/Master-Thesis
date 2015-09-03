@@ -1,4 +1,3 @@
-__author__ = 'joakim'
 from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
 import sys
@@ -8,7 +7,7 @@ remote_host = '192.168.0.196'
 
 if __name__ == '__main__':
     try:
-        #var = input('Welcome to the Control Unit, shall I proceed?\n')
+        # var = input('Welcome to the Control Unit, shall I proceed?\n')
         # SET UP THE DATABASE FOR FUTURE USE
         setup_db()
         # POLLING FOR DATA
