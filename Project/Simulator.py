@@ -58,16 +58,20 @@ if __name__ == '__main__':
             # receive TELEGRAM_SIZE bytes
             telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
             while telegram:
-                # print(telegram)
-                for mu in meter_units:
+                print(telegram)
+                for mu in meter_units:  # debug output, remove before release
                     print('Unit #{id}: {val}'.format(id=mu.get_id(), val=mu.get_value()))
-                telegram = ':'.join('{:02x}'.format(c) for c in telegram)
+                telegram = ':'.join('{:02X}'.format(c) for c in telegram)
                 print('Received: {t} from {src}'.format(t=telegram, src=(str(address))))
+                orders = MBus.parse_telegram(telegram)
                 # respond to client
-                if telegram.startswith('10:4'):
-                    client_socket.sendall(MBus.ACK)
-                elif telegram.startswith('10:5'):
-                    client_socket.sendall(MBus.RSP_UD)
+                if orders[1] == '40':
+                    if int(orders[2]) <= len(meter_units):
+                        client_socket.sendall(MBus.ACK)
+                elif orders[1] == '5B' or orders[1] == '7B':
+                    if int(orders[2]) <= len(meter_units):
+                        client_socket.sendall(str.encode(str(meter_units[int(orders[2])].get_value())))
+                        # client_socket.sendall(MBus.RSP_UD)
                 telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
         except KeyboardInterrupt:
             print('\n\nInterrupted by user, exiting...')

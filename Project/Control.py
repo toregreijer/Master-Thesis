@@ -17,9 +17,13 @@ if __name__ == '__main__':
         nm = NetworkManager()
         nm.open_remote_socket()
         # SEND A PING TO MBUS ADDRESS 0
-        tmp = nm.send(MBus.SND_NKE)
-        tmp = ':'.join('{:02x}'.format(c) for c in tmp)
-        print('Sent stuff, got [%s] back!' % tmp)
+        # tmp = nm.send(MBus.SND_NKE)
+        # tmp = ':'.join('{:02X}'.format(c) for c in tmp)
+        # if tmp:
+        print(MBus.build_snd_nke(0))
+        tmp = nm.send(MBus.REQ_UD2)
+        print('Sent stuff, got {} back!'.format(int(tmp)))
+
         # STORE THE DATA RECEIVED AT THE CORRECT PART OF THE DATABASE
         print('Storing stuff in database...')
         open_and_store(tmp)

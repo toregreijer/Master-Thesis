@@ -17,7 +17,7 @@ def setup_db():
     else:
         print('No database exists, creating a new one...')
         c.execute('CREATE TABLE {tn} ({fn1} {ft1}, '
-                  '{fn2} DATETIME DEFAULT (select(CURRENT_TIMESTAMP,"localtime"), '
+                  '{fn2} DATETIME DEFAULT CURRENT_TIMESTAMP, '
                   '{fn3} {ft3})'
                   .format(tn=table1, fn1=field1, ft1='TEXT', fn2=field2, fn3=field3, ft3='INTEGER'))
         conn.commit()

@@ -1,7 +1,7 @@
-TELEGRAM_SIZE = 128
+TELEGRAM_SIZE = 5
 ACK = b'\xE5'
 SND_NKE = b'\x10\x40\x00\x40\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
-REQ_UD2 = b'\x10\x5B\x01\x5C\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
+REQ_UD2 = b'\x10\x5B\x00\x5B\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
 RSP_UD = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
           b'\x08\x01\x72'               # CONTROL:ADDRESS:CONTROL_INFO
           b'\x42\x00\x00\x00'           # UNIT ID NUMBER
@@ -17,3 +17,17 @@ RSP_UD = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
           b'\x0F'                       # DIF: 0F = no more data; 1F = other data to send
           b'\xCC'                       # CHECKSUM
           b'\x16')                      # STOP CHARACTER
+
+
+def parse_telegram(t):
+    return t.split(':')
+
+
+def build_snd_nke(a):
+    # return b'\x10\x40' + str.encode('{:02X}'.format(a)) + b'\x40\x16'
+    return b'\x10\x40' + bytearray(a) + b'\x40\x16'
+    # still no luck
+
+
+def build_req_ud2(a):
+    pass
