@@ -62,8 +62,7 @@ if __name__ == '__main__':
                 for mu in meter_units:
                     print('Unit #{id}: {val}'.format(id=mu.get_id(), val=mu.get_value()))
                 telegram = ':'.join('{:02x}'.format(c) for c in telegram)
-                print('Received: %s from %s' % (telegram, (str(address))))
-
+                print('Received: {t} from {src}'.format(t=telegram, src=(str(address))))
                 # respond to client
                 if telegram.startswith('10:4'):
                     client_socket.sendall(MBus.ACK)

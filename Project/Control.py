@@ -7,29 +7,30 @@ remote_host = '192.168.0.196'
 
 if __name__ == '__main__':
     try:
-        # var = input('Welcome to the Control Unit, shall I proceed?\n')
+        print('Welcome to the Control Unit, please wait a moment!\n')
         # SET UP THE DATABASE FOR FUTURE USE
+        print('Setting up database...')
         setup_db()
         # POLLING FOR DATA
         # OPEN A CONNECTION TO THE MBUS MASTER
-        nm = NetworkManager(remote_host)
+        print('Connecting to MBus...')
+        nm = NetworkManager()
         nm.open_remote_socket()
         # SEND A PING TO MBUS ADDRESS 0
-        addr = 00
         tmp = nm.send(MBus.SND_NKE)
         tmp = ':'.join('{:02x}'.format(c) for c in tmp)
         print('Sent stuff, got [%s] back!' % tmp)
-
-        # SEND A REQUEST FOR DATA TO THE MBUS MASTER,
-        # FOR UNIT AT ADDRESS X
-        #
         # STORE THE DATA RECEIVED AT THE CORRECT PART OF THE DATABASE
-
+        print('Storing stuff in database...')
         open_and_store(tmp)
-
         # CLOSE DOWN THE CONNECTION
+        print('Closing the connection...')
         nm.close_remote_socket()
+        print('Exiting, goodbye!')
         exit(0)
     except ConnectionRefusedError:
-        print('Could not connect! Exiting...')
+        print('Could not connect! (Connection refused) Exiting...')
+        sys.exit(0)
+    except TimeoutError:
+        print('Could not connect! (Timeout) Exiting...')
         sys.exit(0)
