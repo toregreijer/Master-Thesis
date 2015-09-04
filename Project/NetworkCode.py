@@ -14,9 +14,14 @@ class NetworkManager(object):
         self.remote_host = target_host
 
     def send(self, data):
-        self.remote_socket.sendall(data)
-        tmp = self.remote_socket.recv(255)
-        return tmp
+        try:
+            self.remote_socket.settimeout(1)
+            self.remote_socket.sendall(data)
+            tmp = self.remote_socket.recv(255)
+            return tmp
+        except socket.timeout:
+            # print('timeout error')
+            return None
 
     def accept_connection(self):
         s = self.server_socket
@@ -24,7 +29,7 @@ class NetworkManager(object):
         if not r:
             return 0, 0
         else:
-            print('Accepting connections now!')
+            # print('Accepting connections now!')
             (client_socket, addr) = s.accept()
             client_socket.setblocking(1)
             return client_socket, addr

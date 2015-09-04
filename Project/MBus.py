@@ -1,7 +1,7 @@
-TELEGRAM_SIZE = 5
+TELEGRAM_SIZE = 255
 ACK = b'\xE5'
-SND_NKE = b'\x10\x40\x00\x40\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
-REQ_UD2 = b'\x10\x5B\x00\x5B\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
+# SND_NKE = b'\x10\x40\x00\x40\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
+# REQ_UD2 = b'\x10\x5B\x00\x5B\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
 RSP_UD = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
           b'\x08\x01\x72'               # CONTROL:ADDRESS:CONTROL_INFO
           b'\x42\x00\x00\x00'           # UNIT ID NUMBER
@@ -23,11 +23,13 @@ def parse_telegram(t):
     return t.split(':')
 
 
-def build_snd_nke(a):
-    # return b'\x10\x40' + str.encode('{:02X}'.format(a)) + b'\x40\x16'
-    return b'\x10\x40' + bytearray(a) + b'\x40\x16'
-    # still no luck
+def snd_nke(a):
+    hex_addr = bytes.fromhex(format(a, '02X'))
+    hex_checksum = bytes.fromhex(format(0x40 + a, '02X'))
+    return b'\x10\x40' + hex_addr + hex_checksum + b'\x16'
 
 
-def build_req_ud2(a):
-    pass
+def req_ud2(a):
+    hex_addr = bytes.fromhex(format(a, '02X'))
+    hex_checksum = bytes.fromhex(format(0x5B + a, '02X'))
+    return b'\x10\x5B' + hex_addr + hex_checksum + b'\x16'

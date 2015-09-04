@@ -5,13 +5,13 @@ import threading
 import MBus
 import sys
 
-NUM_UNITS = 3
+NUM_UNITS = 4
 
 
 class MeterUnit(threading.Thread):
     value = 0
     id = 0
-    exit_flag = 0
+    active = 1
 
     def __init__(self, thread_id, name, id_number=0):
         threading.Thread.__init__(self)
@@ -30,12 +30,12 @@ class MeterUnit(threading.Thread):
         return self.id
 
     def run(self):
-        while not self.exit_flag and self.value < 15000:
+        while self.active and self.value < 15000:
             self.consume()
             sleep(1)
 
     def shutdown(self):
-        self.exit_flag = 1
+        self.active = 0
 
 if __name__ == '__main__':
     print('Starting simulator!')
@@ -44,12 +44,17 @@ if __name__ == '__main__':
     print('Listening for incoming connections!')
     meter_units = []
     print('Starting {NU} meter units'.format(NU=NUM_UNITS))
-    for x in range(1, NUM_UNITS):
+    for x in range(0, NUM_UNITS):
         meter_units.append(MeterUnit(x, 'thread_name', x))
     for mu in meter_units:
         mu.setDaemon(1)
         mu.start()
     print('Simulator is running with {NU} units(threads), waiting for requests...'.format(NU=NUM_UNITS))
+
+    meter_units[2].shutdown()
+    meter_units[2].join()
+    meter_units[2].active = 0
+
     while True:
         try:
             client_socket, address = nm.accept_connection()
@@ -58,21 +63,32 @@ if __name__ == '__main__':
             # receive TELEGRAM_SIZE bytes
             telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
             while telegram:
-                print(telegram)
-                for mu in meter_units:  # debug output, remove before release
-                    print('Unit #{id}: {val}'.format(id=mu.get_id(), val=mu.get_value()))
+                # DEBUG OUTPUT
+                # print(telegram)
+                # for mu in meter_units:  # debug output, remove before release
+                    # print('Unit #{id}: {val}'.format(id=mu.get_id(), val=mu.get_value()))
+
                 telegram = ':'.join('{:02X}'.format(c) for c in telegram)
                 print('Received: {t} from {src}'.format(t=telegram, src=(str(address))))
                 orders = MBus.parse_telegram(telegram)
-                # respond to client
                 if orders[1] == '40':
-                    if int(orders[2]) <= len(meter_units):
-                        client_socket.sendall(MBus.ACK)
+                    if 0 <= int(orders[2]) < len(meter_units):
+                        if meter_units[int(orders[2])]:
+                            print('Responded with E5\n')
+                            client_socket.sendall(MBus.ACK)
                 elif orders[1] == '5B' or orders[1] == '7B':
-                    if int(orders[2]) <= len(meter_units):
-                        client_socket.sendall(str.encode(str(meter_units[int(orders[2])].get_value())))
-                        # client_socket.sendall(MBus.RSP_UD)
+                    if 0 <= int(orders[2]) < len(meter_units):
+                        if meter_units[int(orders[2])]:
+                            # TODO: Respond the value of the asked meter unit, in the format XX:XX:XX:XX...
+                            print('Responded with {}'.format(meter_units[int(orders[2])].get_value()))
+                            client_socket.sendall(str.encode(str(meter_units[int(orders[2])].get_value())))
+                            # print(meter_units[int(orders[2])].get_value())
+                            # print(hex(meter_units[int(orders[2])].get_value()))
+                            # print(bytes.fromhex(format(meter_units[int(orders[2])].get_value(), '02X')))
+                            # client_socket.sendall(MBus.RSP_UD)
+
                 telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
+
         except KeyboardInterrupt:
             print('\n\nInterrupted by user, exiting...')
             nm.close_server_socket()

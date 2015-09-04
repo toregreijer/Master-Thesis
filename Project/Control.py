@@ -16,17 +16,21 @@ if __name__ == '__main__':
         print('Connecting to MBus...')
         nm = NetworkManager()
         nm.open_remote_socket()
-        # SEND A PING TO MBUS ADDRESS 0
-        # tmp = nm.send(MBus.SND_NKE)
-        # tmp = ':'.join('{:02X}'.format(c) for c in tmp)
-        # if tmp:
-        print(MBus.build_snd_nke(0))
-        tmp = nm.send(MBus.REQ_UD2)
-        print('Sent stuff, got {} back!'.format(int(tmp)))
 
-        # STORE THE DATA RECEIVED AT THE CORRECT PART OF THE DATABASE
-        print('Storing stuff in database...')
-        open_and_store(tmp)
+        for x in range(1):
+            # SEND A PING TO MBUS ADDRESS X
+            tmp = None
+            tmp = nm.send(MBus.snd_nke(x))
+            # IF THERE IS A UNIT AT ADDRESS X, REQUEST ITS DATA
+            if tmp:
+                tmp = nm.send(MBus.req_ud2(x))
+                print('Sent stuff, got {} back!'.format(int(tmp)))
+                # STORE THE DATA RECEIVED AT THE CORRECT PART OF THE DATABASE
+                print('Storing stuff in database...')
+                open_and_store(tmp)
+            else:
+                print('No answer at {}!'.format(x))
+
         # CLOSE DOWN THE CONNECTION
         print('Closing the connection...')
         nm.close_remote_socket()
@@ -38,3 +42,24 @@ if __name__ == '__main__':
     except TimeoutError:
         print('Could not connect! (Timeout) Exiting...')
         sys.exit(0)
+
+
+def initialize():
+    # TODO: Put the setting up code here.
+    pass
+
+
+def scan():
+    # TODO: Ping address 0 through 255, store addresses that responds.
+    pass
+
+
+def request_data(address):
+    # TODO: Send REQ_UD2 to (address), store the response in the database.
+    pass
+
+
+def ping(address):
+    # TODO: As scan, but for only one (address).
+    pass
+
