@@ -5,7 +5,7 @@ import threading
 import MBus
 import sys
 
-NUM_UNITS = 4
+NUM_UNITS = 2
 
 
 class MeterUnit(threading.Thread):
@@ -73,19 +73,19 @@ if __name__ == '__main__':
                 orders = MBus.parse_telegram(telegram)
                 if orders[1] == '40':
                     if 0 <= int(orders[2]) < len(meter_units):
-                        if meter_units[int(orders[2])]:
-                            print('Responded with E5\n')
-                            client_socket.sendall(MBus.ACK)
+                        # if meter_units[int(orders[2])]:
+                        print('Responded with E5\n')
+                        client_socket.sendall(MBus.ACK)
                 elif orders[1] == '5B' or orders[1] == '7B':
                     if 0 <= int(orders[2]) < len(meter_units):
-                        if meter_units[int(orders[2])]:
-                            # TODO: Respond the value of the asked meter unit, in the format XX:XX:XX:XX...
-                            print('Responded with {}'.format(meter_units[int(orders[2])].get_value()))
-                            client_socket.sendall(str.encode(str(meter_units[int(orders[2])].get_value())))
-                            # print(meter_units[int(orders[2])].get_value())
-                            # print(hex(meter_units[int(orders[2])].get_value()))
-                            # print(bytes.fromhex(format(meter_units[int(orders[2])].get_value(), '02X')))
-                            # client_socket.sendall(MBus.RSP_UD)
+                        # if meter_units[int(orders[2])]:
+                        # TODO: Respond the value of the asked meter unit, in the format XX:XX:XX:XX...
+                        print('Responded with {}'.format(meter_units[int(orders[2])].get_value()))
+                        client_socket.sendall(str.encode(str(meter_units[int(orders[2])].get_value())))
+                        # print(meter_units[int(orders[2])].get_value())
+                        # print(hex(meter_units[int(orders[2])].get_value()))
+                        # print(bytes.fromhex(format(meter_units[int(orders[2])].get_value(), '02X')))
+                        # client_socket.sendall(MBus.RSP_UD)
 
                 telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
 

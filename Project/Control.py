@@ -1,6 +1,5 @@
 from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
-import sys
 import MBus
 
 remote_host = '192.168.0.196'
@@ -31,25 +30,19 @@ def ping(address):
 
 
 if __name__ == '__main__':
-    try:
-        print('Welcome to the Control Unit, please wait a moment!\n')
-        print('Setting up database...')
-        setup_db()
-        print('Connecting to MBus...')
-        nm = NetworkManager()
-        nm.open_remote_socket()
+    # TODO: Build some simple loop where the user can choose operations and change settings
+    print('Welcome to the Control Unit, please wait a moment!\n')
+    print('Setting up database...')
+    setup_db()
+    print('Connecting to MBus...')
+    nm = NetworkManager()
+    nm.open_remote_socket()
 
-        targets = scan()
-        for t in targets:
-            request_data(t)
+    targets = scan()
+    for t in targets:
+        request_data(t)
 
-        print('Closing the connection...')
-        nm.close_remote_socket()
-        print('Exiting, goodbye!')
-        exit(0)
-    except ConnectionRefusedError:
-        print('Could not connect! (Connection refused) Exiting...')
-        sys.exit(0)
-    except TimeoutError:
-        print('Could not connect! (Timeout) Exiting...')
-        sys.exit(0)
+    print('Closing the connection...')
+    nm.close_remote_socket()
+    print('Exiting, goodbye!')
+    exit(0)

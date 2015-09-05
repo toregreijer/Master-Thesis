@@ -35,17 +35,31 @@ class NetworkManager(object):
             return client_socket, addr
 
     def open_server_socket(self):
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind((self.local_host, self.port))
-        self.server_socket.listen(10)
-        self.server_socket.setblocking(1)
+        try:
+            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket.bind((self.local_host, self.port))
+            self.server_socket.listen(10)
+            self.server_socket.setblocking(1)
+        except socket.error:
+            print('General error opening server socket! Check NetworkCode!')
+            return None
 
     def close_server_socket(self):
         self.server_socket.close()
 
     def open_remote_socket(self):
-        self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.remote_socket.connect((self.remote_host, self.port))
+        try:
+            self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.remote_socket.connect((self.remote_host, self.port))
+        except TimeoutError:
+            print('Timeout error opening remote socket!')
+            return None
+        except ConnectionRefusedError:
+            print('Could not connect, connection refused!')
+            return None
+        except socket.error:
+            print('General error opening remote socket! Check NetworkCode!')
+            return None
 
     def close_remote_socket(self):
         self.remote_socket.close()

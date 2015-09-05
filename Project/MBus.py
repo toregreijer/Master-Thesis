@@ -20,6 +20,7 @@ RSP_UD = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
 
 
 def parse_telegram(t):
+    # TODO: Take an MBus telegram and return its type, contents, and purpose.
     return t.split(':')
 
 
@@ -33,3 +34,7 @@ def req_ud2(a):
     hex_addr = bytes.fromhex(format(a, '02X'))
     hex_checksum = bytes.fromhex(format(0x5B + a, '02X'))
     return b'\x10\x5B' + hex_addr + hex_checksum + b'\x16'
+
+
+def build_rsp_ud(a, value):
+    return a, value
