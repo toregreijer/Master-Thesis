@@ -38,7 +38,7 @@ def open_and_fetch(arg):
     return arg
 
 
-# TODO: As well as a way to run more custom queries...
+# TODO: As well as a way to run more custom queries. Where do I put the code that translates user input into SQL?
 def execute(query):
     return query
 

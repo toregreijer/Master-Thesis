@@ -5,7 +5,7 @@ import threading
 import MBus
 import sys
 
-NUM_UNITS = 2
+NUM_UNITS = 1
 
 
 class MeterUnit(threading.Thread):
@@ -43,6 +43,11 @@ if __name__ == '__main__':
     nm.open_server_socket()
     print('Listening for incoming connections!')
     meter_units = []
+    var = input('Number of units to simulate: ')
+    if var.isdigit():
+        NUM_UNITS = var
+    else:
+        print('Input not recognized as digits, using default value (1) instead.')
     print('Starting {NU} meter units'.format(NU=NUM_UNITS))
     for x in range(0, NUM_UNITS):
         meter_units.append(MeterUnit(x, 'thread_name', x))
@@ -50,11 +55,6 @@ if __name__ == '__main__':
         mu.setDaemon(1)
         mu.start()
     print('Simulator is running with {NU} units(threads), waiting for requests...'.format(NU=NUM_UNITS))
-
-    meter_units[2].shutdown()
-    meter_units[2].join()
-    meter_units[2].active = 0
-
     while True:
         try:
             client_socket, address = nm.accept_connection()
@@ -100,3 +100,4 @@ if __name__ == '__main__':
             sys.exit(1)
         client_socket.close()
     nm.close_server_socket()
+    print('Simulation over, exiting!')
