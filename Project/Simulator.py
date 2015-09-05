@@ -45,7 +45,7 @@ if __name__ == '__main__':
     meter_units = []
     var = input('Number of units to simulate: ')
     if var.isdigit():
-        NUM_UNITS = var
+        NUM_UNITS = int(var)
     else:
         print('Input not recognized as digits, using default value (1) instead.')
     print('Starting {NU} meter units'.format(NU=NUM_UNITS))
