@@ -15,7 +15,7 @@ class NetworkManager(object):
 
     def send(self, data):
         try:
-            self.remote_socket.settimeout(1)
+            self.remote_socket.settimeout(0.1)
             self.remote_socket.sendall(data)
             tmp = self.remote_socket.recv(255)
             return tmp

@@ -26,13 +26,13 @@ def parse_telegram(t):
 
 def snd_nke(a):
     hex_addr = bytes.fromhex(format(a, '02X'))
-    hex_checksum = bytes.fromhex(format(0x40 + a, '02X'))
+    hex_checksum = bytes.fromhex(format(0x40 + a, '02X')[-2:])
     return b'\x10\x40' + hex_addr + hex_checksum + b'\x16'
 
 
 def req_ud2(a):
     hex_addr = bytes.fromhex(format(a, '02X'))
-    hex_checksum = bytes.fromhex(format(0x5B + a, '02X'))
+    hex_checksum = bytes.fromhex(format(0x5B + a, '02X')[-2:])
     return b'\x10\x5B' + hex_addr + hex_checksum + b'\x16'
 
 

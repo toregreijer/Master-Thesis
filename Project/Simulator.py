@@ -39,15 +39,15 @@ class MeterUnit(threading.Thread):
 
 if __name__ == '__main__':
     print('Starting simulator!')
-    nm = NetworkManager()
-    nm.open_server_socket()
-    print('Listening for incoming connections!')
-    meter_units = []
     var = input('Number of units to simulate: ')
     if var.isdigit():
         NUM_UNITS = int(var)
     else:
         print('Input not recognized as digits, using default value (1) instead.')
+    nm = NetworkManager()
+    nm.open_server_socket()
+    print('Listening for incoming connections!')
+    meter_units = []
     print('Starting {NU} meter units'.format(NU=NUM_UNITS))
     for x in range(0, NUM_UNITS):
         meter_units.append(MeterUnit(x, 'thread_name', x))
@@ -72,12 +72,12 @@ if __name__ == '__main__':
                 print('Received: {t} from {src}'.format(t=telegram, src=(str(address))))
                 orders = MBus.parse_telegram(telegram)
                 if orders[1] == '40':
-                    if 0 <= int(orders[2]) < len(meter_units):
+                    if 0 <= int(orders[2], 16) < len(meter_units):
                         # if meter_units[int(orders[2])]:
                         print('Responded with E5\n')
                         client_socket.sendall(MBus.ACK)
                 elif orders[1] == '5B' or orders[1] == '7B':
-                    if 0 <= int(orders[2]) < len(meter_units):
+                    if 0 <= int(orders[2], 16) < len(meter_units):
                         # if meter_units[int(orders[2])]:
                         # TODO: Respond the value of the asked meter unit, in the format XX:XX:XX:XX...
                         print('Responded with {}'.format(meter_units[int(orders[2])].get_value()))
