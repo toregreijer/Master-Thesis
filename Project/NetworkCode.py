@@ -21,7 +21,10 @@ class NetworkManager(object):
             return tmp
         except socket.timeout:
             # print('timeout error')
-            return None
+            return
+        except socket.error:
+            print('SOCKET ERROR!')
+            exit(1)
 
     def accept_connection(self):
         s = self.server_socket
@@ -42,24 +45,24 @@ class NetworkManager(object):
             self.server_socket.setblocking(1)
         except socket.error:
             print('General error opening server socket! Check NetworkCode!')
-            return None
+            exit(1)
 
     def close_server_socket(self):
         self.server_socket.close()
 
-    def open_remote_socket(self):
+    def open_remote_socket(self, rh=remote_host, p=port):
         try:
             self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.remote_socket.connect((self.remote_host, self.port))
+            self.remote_socket.connect((rh, p))
         except TimeoutError:
             print('Timeout error opening remote socket!')
-            return None
+            exit(1)
         except ConnectionRefusedError:
             print('Could not connect, connection refused!')
-            return None
+            exit(1)
         except socket.error:
             print('General error opening remote socket! Check NetworkCode!')
-            return None
+            exit(1)
 
     def close_remote_socket(self):
         self.remote_socket.close()
