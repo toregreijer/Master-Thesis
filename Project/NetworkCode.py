@@ -58,8 +58,9 @@ class NetworkManager(object):
             print('Timeout error opening remote socket!')
             exit(1)
         except socket.error:
-            if socket.error.errno == 111:
+            if socket.error.errno == socket.error.errno.ECONNREFUSED:
                 print('Could not connect, connection refused!')
+                exit(1)
             print('General error opening remote socket! Check NetworkCode!')
             exit(1)
 

@@ -33,7 +33,7 @@ def ping(address):
 
 
 if __name__ == '__main__':
-    print('Welcome to the Control Unit, please wait a moment!\n')
+    print('Welcome to the Control Unit, please wait a moment!')
     print('Setting up database...')
     setup_db()
     print('Database ready.')
