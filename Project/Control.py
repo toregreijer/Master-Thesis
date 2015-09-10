@@ -38,7 +38,7 @@ if __name__ == '__main__':
     setup_db()
     print('Database ready.')
     nm = NetworkManager()
-    nm.open_remote_socket()
+    # nm.open_remote_socket()
     user_choice = ''
     print('Connection established.')
     while alive:
