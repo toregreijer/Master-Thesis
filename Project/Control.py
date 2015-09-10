@@ -2,7 +2,7 @@ from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
 import MBus
 
-remote_host = '192.168.0.196'
+remote_host = '192.168.0.125'
 port = 11111
 list_of_meter_units = []
 alive = 1
@@ -38,7 +38,7 @@ if __name__ == '__main__':
     setup_db()
     print('Database ready.')
     nm = NetworkManager()
-    # nm.open_remote_socket()
+    nm.open_remote_socket(remote_host)
     user_choice = ''
     print('Connection established.')
     while alive:
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         elif choice in ('3', 'print', 'p'):
             pass
         elif choice in ('4', 'connect', 'c'):
-            # nm.close_remote_socket()
+            nm.close_remote_socket()
             nm.open_remote_socket(remote_host, port)
         elif choice in ('5', 'options', 'o'):
             remote_host = input('Remote host? ')
