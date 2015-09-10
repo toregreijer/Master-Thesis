@@ -80,7 +80,7 @@ if __name__ == '__main__':
                     if 0 <= int(orders[2], 16) < len(meter_units):
                         # if meter_units[int(orders[2])]:
                         # TODO: Respond the value of the asked meter unit, in the format XX:XX:XX:XX...
-                        print('Responded with {}'.format(meter_units[int(orders[2])].get_value()))
+                        print('Responded with {}'.format(meter_units[int(orders[2], 16)].get_value()))
                         client_socket.sendall(str.encode(str(meter_units[int(orders[2])].get_value())))
                         # print(meter_units[int(orders[2])].get_value())
                         # print(hex(meter_units[int(orders[2])].get_value()))
