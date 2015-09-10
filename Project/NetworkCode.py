@@ -51,7 +51,7 @@ class NetworkManager(object):
         try:
             self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.remote_socket.connect((self.remote_host, self.port))
-        except TimeoutError:
+        except socket.timeout:
             print('Timeout error opening remote socket!')
             return None
         except ConnectionRefusedError:
