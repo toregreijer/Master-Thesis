@@ -61,7 +61,7 @@ if __name__ == '__main__':
             if client_socket is 0:
                 continue
             # receive TELEGRAM_SIZE bytes
-            telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
+            telegram = client_socket.recv(5)
             while telegram:
                 # DEBUG OUTPUT
                 # print(telegram)
@@ -87,7 +87,7 @@ if __name__ == '__main__':
                         # print(bytes.fromhex(format(meter_units[int(orders[2])].get_value(), '02X')))
                         # client_socket.sendall(MBus.RSP_UD)
 
-                telegram = client_socket.recv(MBus.TELEGRAM_SIZE)
+                telegram = client_socket.recv(5)
 
         except KeyboardInterrupt:
             print('\n\nInterrupted by user, exiting...')
