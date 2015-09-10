@@ -62,7 +62,7 @@ if __name__ == '__main__':
         elif choice in ('3', 'print', 'p'):
             pass
         elif choice in ('4', 'connect', 'c'):
-            nm.close_remote_socket()
+            # nm.close_remote_socket()
             nm.open_remote_socket(remote_host, port)
         elif choice in ('5', 'options', 'o'):
             remote_host = input('Remote host? ')
