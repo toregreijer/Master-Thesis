@@ -68,27 +68,26 @@ if __name__ == '__main__':
                 # for mu in meter_units:  # debug output, remove before release
                     # print('Unit #{id}: {val}'.format(id=mu.get_id(), val=mu.get_value()))
 
-                telegram = ':'.join('{:02X}'.format(c) for c in telegram)
-                print('Received: {t} from {src}'.format(t=telegram, src=(str(address))))
-                orders = MBus.parse_telegram(telegram)
-                if orders[1] == '40':
-                    if 0 <= int(orders[2], 16) < len(meter_units):
+                # telegram = ':'.join('{:02X}'.format(c) for c in telegram)
+                mbt = MBus.parse_telegram(telegram)
+                print('Received: {t} from {src}'.format(t=mbt, src=(str(address))))
+
+                if mbt.type == 'SND_NKE':
+                    if 0 <= mbt.A < len(meter_units):
                         # if meter_units[int(orders[2])]:
                         print('Responded with E5\n')
                         client_socket.sendall(MBus.ACK)
-                elif orders[1] == '5B' or orders[1] == '7B':
-                    if 0 <= int(orders[2], 16) < len(meter_units):
-                        # if meter_units[int(orders[2])]:
-                        # TODO: Respond the value of the asked meter unit, in the format XX:XX:XX:XX...
-                        print('Responded with {}'.format(meter_units[int(orders[2], 16)].get_value()))
-                        client_socket.sendall(str.encode(str(meter_units[int(orders[2], 16)].get_value())))
-                        # print(meter_units[int(orders[2])].get_value())
-                        # print(hex(meter_units[int(orders[2])].get_value()))
-                        # print(bytes.fromhex(format(meter_units[int(orders[2])].get_value(), '02X')))
-                        # client_socket.sendall(MBus.RSP_UD)
-
+                elif mbt.type == 'REQ_UD2':
+                    if 0 <= mbt.A < len(meter_units):
+                        response = MBus.rsp_ud(mbt.A, meter_units[mbt.A].get_value())
+                        mbt_r = MBus.MBusTelegram(response)
+                        print('Responded with value {} [{}]'.format(meter_units[mbt.A].get_value(), mbt_r))
+                        client_socket.sendall(response)
                 telegram = client_socket.recv(5)
-
+        except ConnectionResetError:
+            print('\nConnection aborted by other party.')
+            client_socket.close()
+            continue
         except KeyboardInterrupt:
             print('\n\nInterrupted by user, exiting...')
             nm.close_server_socket()

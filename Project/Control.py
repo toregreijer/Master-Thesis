@@ -20,15 +20,23 @@ def scan():
 
 def request_data(address):
     """ Send REQ_UD2 to (address), store the response in the database. """
+    # rq = MBus_Telegram(address, 'REQ_UD2'))
+    # tmp = nm.send(rq.raw)
     tmp = nm.send(MBus.req_ud2(address))
-    print('Sent request to {0}, got {1} back!'.format(address, tmp))
-    print('Storing stuff in database...')
-    open_and_store(tmp)
+    if tmp:
+        tmp = MBus.parse_telegram(tmp)
+        print('Sent request to {0}, got {1} back!'.format(address, tmp))
+        # TODO: Parse the input, so we can store it accurately
+        print('Storing stuff in database...')
+        open_and_store(tmp.raw)
+    else:
+        print('Sent request to {0}, got {1} back!'.format(address, tmp))
     print('Done!')
 
 
 def ping(address):
     """ Ping address and return the result, True or False. """
+    # return nm.send(MBus_Telegram(address, 'SND_NKE').raw)
     return nm.send(MBus.snd_nke(address))
 
 
