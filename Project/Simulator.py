@@ -61,7 +61,7 @@ if __name__ == '__main__':
             if client_socket is 0:
                 continue
             # receive TELEGRAM_SIZE bytes
-            telegram = client_socket.recv(5)
+            telegram = client_socket.recv(64)
             while telegram:
                 # DEBUG OUTPUT
                 # print(telegram)
@@ -77,13 +77,15 @@ if __name__ == '__main__':
                         # if meter_units[int(orders[2])]:
                         print('Responded with E5\n')
                         client_socket.sendall(MBus.ACK)
+                elif mbt.type == 'SND_UD':
+                    client_socket.sendall(MBus.ACK)
                 elif mbt.type == 'REQ_UD2':
                     if 0 <= mbt.A < len(meter_units):
                         response = MBus.rsp_ud(mbt.A, meter_units[mbt.A].get_value())
                         mbt_r = MBus.MBusTelegram(response)
                         print('Responded with value {} [{}]'.format(meter_units[mbt.A].get_value(), mbt_r))
                         client_socket.sendall(response)
-                telegram = client_socket.recv(5)
+                telegram = client_socket.recv(64)
         except ConnectionResetError:
             print('\nConnection aborted by other party.')
             client_socket.close()

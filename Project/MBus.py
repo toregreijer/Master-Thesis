@@ -47,6 +47,14 @@ def snd_nke(a):
     return b'\x10\x40' + hex_addr + hex_checksum + b'\x16'
 
 
+def snd_nke_2(a):
+    addr = bytes.fromhex(rev(str(a)))
+    cs = bytes.fromhex(hex(0x5BE + sum(addr))[-2:])
+    while len(addr) < 8:
+        addr += b'\x00'
+    return b'\x68\x0B\x0B\x68\x73\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
+
+
 def req_ud2(a):
     hex_addr = b(a)                 # bytes.fromhex(format(a, '02X'))
     hex_checksum = b(0x5B+a)        # bytes.fromhex(format(0x5B + a, '02X')[-2:])

@@ -18,6 +18,16 @@ def scan():
     return list_of_addresses
 
 
+def scan_secondary():
+    """ Ping all addresses and return a list of those that respond """
+    list_of_addresses = []
+    for x in range(0, 1000):
+            if ping_secondary_addr(x):
+                list_of_addresses.append(x)
+                print('Discovered unit at address {}!'.format(x))
+    return list_of_addresses
+
+
 def request_data(address):
     """ Send REQ_UD2 to (address), store the response in the database. """
     # rq = MBus_Telegram(address, 'REQ_UD2'))
@@ -38,6 +48,10 @@ def ping(address):
     """ Ping address and return the result, True or False. """
     # return nm.send(MBus_Telegram(address, 'SND_NKE').raw)
     return nm.send(MBus.snd_nke(address))
+
+
+def ping_secondary_addr(address):
+    return nm.send(MBus.snd_nke_2(address))
 
 
 if __name__ == '__main__':
