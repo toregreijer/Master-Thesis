@@ -56,10 +56,13 @@ class NetworkManager(object):
             self.remote_socket.connect((rh, p))
         except socket.timeout:
             print('Timeout error opening remote socket!')
-            exit(1)
+            # exit(1)
         except socket.error:
             print('General error opening remote socket! Check NetworkCode!')
-            exit(1)
+            # exit(1)
 
     def close_remote_socket(self):
-        self.remote_socket.close()
+        try:
+            self.remote_socket.close()
+        except socket.error:
+            print('General error closing remote socket!')
