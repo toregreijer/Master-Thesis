@@ -2,7 +2,7 @@ from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
 import MBus
 
-remote_host = '192.168.1.41'
+remote_host = '192.168.1.175'
 port = 2401
 list_of_meter_units = []
 alive = 1

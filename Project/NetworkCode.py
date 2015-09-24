@@ -52,10 +52,10 @@ class NetworkManager(object):
     def close_server_socket(self):
         self.server_socket.close()
 
-    def open_remote_socket(self, rh=remote_host, p=port):
+    def open_remote_socket(self):
         try:
             self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.remote_socket.connect((rh, p))
+            self.remote_socket.connect((self.remote_host, self.port))
         except socket.timeout:
             print('Timeout error opening remote socket!')
             # exit(1)
