@@ -2,8 +2,8 @@ from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
 import MBus
 
-remote_host = '192.168.0.125'
-port = 11111
+remote_host = '192.168.1.41'
+port = 2401
 list_of_meter_units = []
 alive = 1
 
@@ -11,7 +11,7 @@ alive = 1
 def scan():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
-    for x in range(255):
+    for x in range(250):
             if ping(x):
                 list_of_addresses.append(x)
                 print('Discovered unit at address {}!'.format(x))
@@ -55,14 +55,14 @@ def ping_secondary_addr(address):
 
 
 if __name__ == '__main__':
-    print('Welcome to the Control Unit, please wait a moment!')
+    print('Welcome to the Control Unit, please wait a moment! +++ ')
     print('Setting up database...')
     setup_db()
     print('Database ready.')
-    nm = NetworkManager()
-    nm.open_remote_socket(remote_host)
+    nm = NetworkManager(remote_host)
+    # nm.open_remote_socket(remote_host, port)
     user_choice = ''
-    print('Connection established.')
+    # print('Connection established.')
     while alive:
         # TODO: Add options for settings, and connecting to the MBus here instead
         choice = input('Please select option:\n'
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                     request_data(u)
         elif choice in ('7', 'exit', 'e'):
             break
-    print('Closing the connection...')
-    nm.close_remote_socket()
+    # print('Closing the connection...')
+    # nm.close_remote_socket()
     print('Exiting, goodbye!')
     exit(0)

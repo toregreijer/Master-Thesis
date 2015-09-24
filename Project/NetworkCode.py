@@ -3,7 +3,7 @@ import select
 
 
 class NetworkManager(object):
-    port = 11111
+    port = 2401
     local_host = ''
     remote_host = ''
     server_socket = socket
@@ -15,9 +15,11 @@ class NetworkManager(object):
 
     def send(self, data):
         try:
+            self.open_remote_socket()
             self.remote_socket.settimeout(0.1)
             self.remote_socket.sendall(data)
-            tmp = self.remote_socket.recv(255)
+            tmp = self.remote_socket.recv(1024)
+            self.close_remote_socket()
             return tmp
         except socket.timeout:
             # print('timeout error')
@@ -56,10 +58,13 @@ class NetworkManager(object):
             self.remote_socket.connect((rh, p))
         except socket.timeout:
             print('Timeout error opening remote socket!')
-            exit(1)
+            # exit(1)
         except socket.error:
             print('General error opening remote socket! Check NetworkCode!')
-            exit(1)
+            # exit(1)
 
     def close_remote_socket(self):
-        self.remote_socket.close()
+        try:
+            self.remote_socket.close()
+        except socket.error:
+            print('General error closing remote socket! Check NetworkCode!')
