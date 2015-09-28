@@ -38,7 +38,10 @@ RSP_UD = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
 
 
 def parse_telegram(t):
-    return MBusTelegram(t)
+    if t:
+        return MBusTelegram(t)
+    else:
+        return
 
 
 def snd_nke(a):
@@ -120,7 +123,7 @@ class MBusTelegram:
         if len(t) == 1:
             self.format = 'SINGLE'
             self.type = 'ACK'
-        if len(t) == 5:
+        elif len(t) == 5:
             # 5 bytes, short telegram, SND_NKE or REQ_UD2. Received by sim only.
             self.format = 'SHORT'
             self.C = self.hex_list[1]

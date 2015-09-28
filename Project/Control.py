@@ -2,7 +2,7 @@ from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
 import MBus
 
-remote_host = '192.168.1.175'
+remote_host = '192.168.1.41'
 port = 2401
 list_of_meter_units = []
 alive = 1
@@ -40,18 +40,19 @@ def request_data(address):
         print('Storing stuff in database...')
         open_and_store(tmp.raw)
     else:
-        print('Sent request to {0}, got {1} back!'.format(address, tmp))
+        print('Sent request to {0}, but did not get a response.'.format(address))
     print('Done!')
 
 
 def ping(address):
     """ Ping address and return the result, True or False. """
-    # return nm.send(MBus_Telegram(address, 'SND_NKE').raw)
-    return nm.send(MBus.snd_nke(address))
+    # print('Sent: {}'.format(':'.join(MBus.snd_nke(address))))
+    return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
 
 
 def ping_secondary_addr(address):
-    return nm.send(MBus.snd_nke_2(address))
+    # print('Sent: {}'.format(':'.join(MBus.snd_nke_2(address))))
+    return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
 
 
 if __name__ == '__main__':
@@ -68,8 +69,8 @@ if __name__ == '__main__':
         choice = input('Please select option:\n'
                        '1. Scan MBus for units.\n'
                        '2. Request data from one unit.\n'
-                       '3. Print collected data for one unit.\n'
-                       '4. Connect to an MBus.\n'
+                       '3. PING1 // Print collected data for one unit.\n'
+                       '4. PING2 // Connect to an MBus.\n'
                        '5. Options\n'
                        '6. Speed Test\n'
                        '7. Exit\n'
@@ -82,10 +83,11 @@ if __name__ == '__main__':
             target = input('Which unit? [0-255]  ')
             request_data(int(target))
         elif choice in ('3', 'print', 'p'):
-            pass
+            target = input('Which unit? ')
+            print(ping(int(target)))
         elif choice in ('4', 'connect', 'c'):
-            nm.close_remote_socket()
-            nm.open_remote_socket(remote_host, port)
+            target = input('Which unit? ')
+            print(ping_secondary_addr(int(target)))
         elif choice in ('5', 'options', 'o'):
             remote_host = input('Remote host? ')
             port = int(input('Port? '))

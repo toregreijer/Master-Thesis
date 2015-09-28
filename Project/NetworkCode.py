@@ -16,17 +16,17 @@ class NetworkManager(object):
     def send(self, data):
         try:
             self.open_remote_socket()
-            self.remote_socket.settimeout(0.1)
+            self.remote_socket.settimeout(1)
             self.remote_socket.sendall(data)
             tmp = self.remote_socket.recv(1024)
             self.close_remote_socket()
             return tmp
         except socket.timeout:
-            # print('timeout error')
+            print('timeout error')
             return
         except socket.error:
             print('SOCKET ERROR!')
-            exit(1)
+            return
 
     def accept_connection(self):
         s = self.server_socket
@@ -45,17 +45,20 @@ class NetworkManager(object):
             self.server_socket.bind((self.local_host, self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)
+            # print('Opened: {}'.format(self.server_socket))
         except socket.error:
             print('General error opening server socket! Check NetworkCode!')
             exit(1)
 
     def close_server_socket(self):
+        # print('Closing: {}'.format(self.server_socket))
         self.server_socket.close()
 
     def open_remote_socket(self):
         try:
             self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.remote_socket.connect((self.remote_host, self.port))
+            # print('Opening, L={} R={}'.format(self.remote_socket.getsockname(), self.remote_socket.getpeername()))
         except socket.timeout:
             print('Timeout error opening remote socket!')
             # exit(1)
@@ -65,6 +68,8 @@ class NetworkManager(object):
 
     def close_remote_socket(self):
         try:
+            # print('Closing, L={} R={}'.format(self.remote_socket.getsockname(), self.remote_socket.getpeername()))
+            self.remote_socket.shutdown(socket.SHUT_RDWR)
             self.remote_socket.close()
         except socket.error:
             print('General error closing remote socket! Check NetworkCode!')
