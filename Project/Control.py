@@ -1,5 +1,6 @@
 from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
+from datetime import datetime
 import MBus
 
 remote_host = '192.168.1.41'
@@ -84,7 +85,7 @@ if __name__ == '__main__':
             request_data(int(target))
         elif choice in ('3', 'print', 'p'):
             target = input('Which unit? ')
-            print(ping(int(target)))
+            print('{}: {}'.format(datetime.now(), ping(int(target))))
         elif choice in ('4', 'connect', 'c'):
             target = input('Which unit? ')
             print(ping_secondary_addr(int(target)))

@@ -119,38 +119,36 @@ class MBusTelegram:
 
     def __init__(self, t):
         self.raw = t
-        self.hex_list = [format(x, '02X') for x in t]  # [hex(h).upper() for h in list(b)]
-        if len(t) == 1:
+        self.hex_list = [format(x, '02X') for x in t]
+        if len(t) == 1:  # 1 byte, ACK, Slave -> Master
             self.format = 'SINGLE'
+            self.L = 1
             self.type = 'ACK'
-        elif len(t) == 5:
-            # 5 bytes, short telegram, SND_NKE or REQ_UD2. Received by sim only.
+        elif len(t) == 5:  # 5 bytes, Short Frame, Master -> Slave
             self.format = 'SHORT'
+            self.L = 5
             self.C = self.hex_list[1]
-            self.A = int(self.hex_list[2], 16)  # Should A be 0 to 255(int), or '00' to 'FF'(str)?
+            self.A = self.hex_list[2]  # hexadecimal address, use "int(self.hex_list[2], 16)" to get integer address
             self.CS = self.hex_list[3]
-            if self.hex_list[1] == '40':
+            if self.hex_list[1] == '40':  # SND_NKE: C = 40.
                 self.type = 'SND_NKE'
-            elif self.hex_list[1] == '5B' or self.hex_list[1] == '7B':
+            elif self.hex_list[1] == '5B' or self.hex_list[1] == '7B':  # REQ_UD2: C = 5B or 7B.
                 self.type = 'REQ_UD2'
-        else:
-            # Length > 5, long telegram, SND_UD or RSP_UD. Data transfer, both ways.
+        else:  # More than 5 bytes, Long Frame, SND_UD or RSP_UD. Data transfer, both ways.
             self.format = 'LONG'
-            self.A = int(self.hex_list[5], 16)
+            self.L = self.hex_list[1]
             self.C = self.hex_list[4]
-            self.L = self.hex_list[1]  # TODO: Do we need these?
+            self.A = self.hex_list[5]  # hexadecimal address, use "int(self.hex_list[2], 16)" to get integer address
             self.CI = self.hex_list[6]
             self.CS = self.hex_list[-1:]
-            # SND_UD: C==53 / 73 Long Frame Master send data to Slave
-            if self.C == '53' or self.C == '73':
+            if self.C == '53' or self.C == '73':  # SND_UD: C = 53 or 73. Long Frame, Master -> Slave
                 self.type = 'SND_UD'
-            # RSP_UD: C==08 / 18 Long Frame Data transfer from Slave to Master
-            elif self.C == '08' or self.C == '18':
+            elif self.C == '08' or self.C == '18':  # RSP_UD: C = 08 or 18. Long Frame, Slave -> Master
                 self.type = 'RSP_UD'
+
         assert self.type in TELEGRAM_TYPE
         assert self.format in TELEGRAM_FORMAT
         # TODO: Assert self.CS == calculate_new_CS(raw) ..typ?
 
     def __str__(self):
-        # return ':'.join('{:02X}'.format(c) for c in self.raw)
         return ':'.join(self.hex_list)
