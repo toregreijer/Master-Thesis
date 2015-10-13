@@ -25,6 +25,7 @@ print(XX_list)
 # print(bytes.fromhex(format(14, '02X')))
 # print(MBus.b(0x04+8))
 # print(MBus.rsp_ud(1, 1000))
+print('\n'.join(['{:02}:{}{:>10}{:>10}{:>10}'.format(x, chr(x+64), hex(x*1024), hex(x*32), hex(x)) for x in range(1, 26)]))
 """
 one = format(12345, '02X')
 print(one)

@@ -12,7 +12,7 @@ alive = 1
 def scan():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
-    for x in range(250):
+    for x in range(51, 52):
             if ping(x):
                 list_of_addresses.append(x)
                 print('Discovered unit at address {}!'.format(x))
@@ -36,12 +36,14 @@ def request_data(address):
     tmp = nm.send(MBus.req_ud2(address))
     if tmp:
         tmp = MBus.parse_telegram(tmp)
-        print('Sent request to {0}, got {1} back!'.format(address, tmp))
+        print('{}: Sent request to {}, got {} back!'.format(datetime.now(), address, tmp))
+        print(tmp.fields)
+        print(tmp.ident, tmp.manufacturer, tmp.medium, tmp.mdh)
         # TODO: Parse the input, so we can store it accurately
         print('Storing stuff in database...')
         open_and_store(tmp.raw)
     else:
-        print('Sent request to {0}, but did not get a response.'.format(address))
+        print('{}: Sent request to {}, but did not get a response.'.format(datetime.now(), address))
     print('Done!')
 
 
@@ -53,7 +55,7 @@ def ping(address):
 
 def ping_secondary_addr(address):
     # print('Sent: {}'.format(':'.join(MBus.snd_nke_2(address))))
-    return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
+    return MBus.parse_telegram(nm.send(MBus.extra_req_ud2(address)))
 
 
 if __name__ == '__main__':
@@ -61,7 +63,7 @@ if __name__ == '__main__':
     print('Setting up database...')
     setup_db()
     print('Database ready.')
-    nm = NetworkManager(remote_host)
+    nm = NetworkManager()
     # nm.open_remote_socket(remote_host, port)
     user_choice = ''
     # print('Connection established.')
@@ -85,7 +87,8 @@ if __name__ == '__main__':
             request_data(int(target))
         elif choice in ('3', 'print', 'p'):
             target = input('Which unit? ')
-            print('{}: {}'.format(datetime.now(), ping(int(target))))
+            c = ping(int(target))
+            print(c.fields)
         elif choice in ('4', 'connect', 'c'):
             target = input('Which unit? ')
             print(ping_secondary_addr(int(target)))
@@ -98,7 +101,5 @@ if __name__ == '__main__':
                     request_data(u)
         elif choice in ('7', 'exit', 'e'):
             break
-    # print('Closing the connection...')
-    # nm.close_remote_socket()
     print('Exiting, goodbye!')
     exit(0)

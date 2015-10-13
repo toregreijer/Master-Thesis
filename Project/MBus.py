@@ -64,6 +64,12 @@ def req_ud2(a):
     return b'\x10\x5B' + hex_addr + hex_checksum + b'\x16'
 
 
+def extra_req_ud2(a):
+    hex_addr = b(a)                 # bytes.fromhex(format(a, '02X'))
+    hex_checksum = b(0x5B+a)        # bytes.fromhex(format(0x5B + a, '02X')[-2:])
+    return b'\x10\x7B' + hex_addr + hex_checksum + b'\x16'
+
+
 def rsp_ud(a, value):
     start = 0x68                        # int
     stop = 0x16                         # int
@@ -105,46 +111,114 @@ def rev(h):
     return result
 
 
+def decode_mf(b1, b2):
+        h = b2 + b1
+        name = \
+            chr(((int(h, 16) & 0xFC00)//1024)+64) + \
+            chr(((int(h, 16) & 0x3E0)//32)+64) + \
+            chr(((int(h, 16) & 0x1F)+64))
+        return name
+
+
+def decode_medium(m):
+    list_of_mediums = ['Other', 'Oil', 'Electricity', 'Gas',
+                       'Heat', 'Steam', 'Hot Water', 'Water',
+                       'Heat Cost Allocator', 'Compressed Air',
+                       'Cooling load meter', 'Cooling load meter',
+                       'Heat', 'Heat / Cooling load meter',
+                       'Bus / System', 'Unknown Medium', 'Reserved',
+                       'Reserved', 'Reserved', 'Reserved', 'Reserved',
+                       'Reserved', 'Cold Water', 'Dual Water',
+                       'Pressure', 'A/D Converter', 'Reserved']
+    n = int(m, 16)
+    if n >= 32:
+        return 'Reserved'
+    else:
+        return list_of_mediums[n]
+
+
 class MBusTelegram:
     raw = b''
     hex_list = []
-    L = 0
-    C = 0
-    A = 0
-    CI = 0
-    CS = 0
+    fields = None
+    keywords_short = ['start', 'control', 'address', 'checksum', 'stop']
+    keywords_long = ['start', 'length', 'length', 'start',
+                     'control', 'address', 'control_info']
+    fixed_data_header = ['id1', 'id2', 'id3', 'id4', 'mf1', 'mf2',
+                         'ver', 'medium', 'access', 'status', 'sig1', 'sig2']
     format = ''
-    payload = ''
     type = ''
+    identification = 0
+    manufacturer = ''
+    medium = ''
+    unit = ''
+    value = 0
+    mdh = False
 
     def __init__(self, t):
         self.raw = t
         self.hex_list = [format(x, '02X') for x in t]
         if len(t) == 1:  # 1 byte, ACK, Slave -> Master
             self.format = 'SINGLE'
-            self.L = 1
             self.type = 'ACK'
+
         elif len(t) == 5:  # 5 bytes, Short Frame, Master -> Slave
             self.format = 'SHORT'
-            self.L = 5
-            self.C = self.hex_list[1]
-            self.A = self.hex_list[2]  # hexadecimal address, use "int(self.hex_list[2], 16)" to get integer address
-            self.CS = self.hex_list[3]
-            if self.hex_list[1] == '40':  # SND_NKE: C = 40.
+
+            # Telegram header
+            self.fields = dict(zip(self.keywords_short, self.hex_list))
+
+            # SND_NKE: C = 40.
+            if self.fields['control'] == '40':
                 self.type = 'SND_NKE'
-            elif self.hex_list[1] == '5B' or self.hex_list[1] == '7B':  # REQ_UD2: C = 5B or 7B.
+
+            # REQ_UD2: C = 5B or 7B.
+            elif self.fields['control'] == '5B' or self.fields['control'] == '7B':
                 self.type = 'REQ_UD2'
+
         else:  # More than 5 bytes, Long Frame, SND_UD or RSP_UD. Data transfer, both ways.
             self.format = 'LONG'
-            self.L = self.hex_list[1]
-            self.C = self.hex_list[4]
-            self.A = self.hex_list[5]  # hexadecimal address, use "int(self.hex_list[2], 16)" to get integer address
-            self.CI = self.hex_list[6]
-            self.CS = self.hex_list[-1:]
-            if self.C == '53' or self.C == '73':  # SND_UD: C = 53 or 73. Long Frame, Master -> Slave
+
+            # Manufacturer specific data present?
+            self.mdh = '0F' in self.hex_list[19:] or '1F' in self.hex_list[19:]
+
+            # Telegram header
+            self.fields = dict(zip(self.keywords_long, self.hex_list))
+
+            # SND_UD: C = 53 or 73. Long Frame, Master -> Slave
+            if self.fields['control'] == '53' or self.fields['control'] == '73':
                 self.type = 'SND_UD'
-            elif self.C == '08' or self.C == '18':  # RSP_UD: C = 08 or 18. Long Frame, Slave -> Master
+
+            # RSP_UD: C = 08 or 18. Long Frame, Slave -> Master
+            elif self.fields['control'] == '08' or self.fields['control'] == '18':
                 self.type = 'RSP_UD'
+
+                # Fixed data header
+                d = dict(zip(self.fixed_data_header, self.hex_list[7:19]))
+                self.identification = d['id4'] + d['id3'] + d['id2'] + d['id1']
+                self.manufacturer = decode_mf(d['mf1'], d['mf2'])
+                self.medium = decode_medium(d['medium'])
+
+                # TODO: Parse Data!
+                # Variable Data Blocks
+                # DIF:  Data info field = 1byte
+                # DIFE: Data info field extension = 0-10bytes
+                # VIF:  Value info field = 1byte
+                # VIFE: Value info field extension = 0-10bytes
+                # DATA!
+
+                # 1. Handle DIB, 1-11 bytes
+                # Hack, DIF >= 128 == Extension bit set!
+                # DIF = ext-bit, LSB of storage number-bit, 2-bit function field,
+                # 4-bit data field describing length and coding of data
+
+                # 2. Handle VIB, 1-11 bytes
+                # VIF = ext-bit, 7-bit unit and multiplier(value), check chapter 8.4.3
+
+                # 3. Read appropriate data, as described in 1.
+
+                # 4. Go to 1.
+
 
         assert self.type in TELEGRAM_TYPE
         assert self.format in TELEGRAM_FORMAT
@@ -152,3 +226,10 @@ class MBusTelegram:
 
     def __str__(self):
         return ':'.join(self.hex_list)
+
+
+# self.L = self.hex_list[1]
+# self.C = self.hex_list[4]
+# self.A = self.hex_list[5]  # hexadecimal address, use "int(self.hex_list[2], 16)" to get integer address
+# self.CI = self.hex_list[6]
+# self.CS = self.hex_list[-1:]
