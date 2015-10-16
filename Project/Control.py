@@ -37,8 +37,8 @@ def request_data(address):
     if tmp:
         tmp = MBus.parse_telegram(tmp)
         print('{}: Sent request to {}, got {} back!'.format(datetime.now(), address, tmp))
-        print(tmp.fields)
-        print(tmp.ident, tmp.manufacturer, tmp.medium, tmp.mdh)
+        print(tmp.pretty_print())
+
         # TODO: Parse the input, so we can store it accurately
         print('Storing stuff in database...')
         open_and_store(tmp.raw)

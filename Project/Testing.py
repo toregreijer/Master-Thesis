@@ -20,12 +20,17 @@ print('list_of_hexes: {0}  -  type: {1}'.format(list_of_hexes, type(list_of_hexe
 # print(int(list_of_hexes[1], 16))
 # print(len(manual))
 print(XX_list)
+
 # print([int(x, 16) for x in XX_list])
 # print(bytes.fromhex(XX_list[2]))
 # print(bytes.fromhex(format(14, '02X')))
 # print(MBus.b(0x04+8))
 # print(MBus.rsp_ud(1, 1000))
-print('\n'.join(['{:02}:{}{:>10}{:>10}{:>10}'.format(x, chr(x+64), hex(x*1024), hex(x*32), hex(x)) for x in range(1, 26)]))
+# print('\n'.join(['{:02}:{}{:>10}{:>10}{:>10}'.format(
+# x, chr(x+64), hex(x*1024), hex(x*32), hex(x)) for x in range(1, 26)]))
+
+print(format(0b11010101 >> 4, '08b'))
+
 """
 one = format(12345, '02X')
 print(one)

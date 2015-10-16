@@ -137,6 +137,73 @@ def decode_medium(m):
         return list_of_mediums[n]
 
 
+def decode_dif(dif):
+    dif = int(dif, 16)
+    extension_bit = (dif & 0x80) != 0
+    # LSB_of_storage = (dif & 0x40) != 0
+    function_field = (dif & 0x30)
+    data_field = (dif & 0x0F)
+
+    # The function field gives the type of data as follows:
+    function_codes = ['Instantaneous ', 'Maximum ', 'Minimum ', 'Value during error state']
+
+    # The data field shows how the data from the master must be interpreted in respect of length
+    # and coding. The following table contains the possible coding of the data field:
+    data_codes = ['No data', '8bit Integer', '16bit Integer', '24bit Integer',
+                  '32bit Integer', '32bit Real', '48bit Integer', '64bit Integer',
+                  'Selection for Readout', '2 digit BCD', '4 digit BCD', '6 digit BCD',
+                  '8 digit BCD', 'Variable length', '12 digit BCD', 'Special functions']
+    data_length = [0, 1, 2, 3, 4, 4, 6, 8, 0, 1, 2, 3, 4, 1, 6, 0]
+
+    return extension_bit, function_codes[function_field], \
+        data_codes[data_field], data_length[data_field]
+
+
+def decode_vif(vif):
+    vif = int(vif, 16)
+    extension_bit = (vif & 0x80) != 0
+    code = (vif & 0x7F) >> 3
+    zzz = vif & 0b00000111
+    if code == 0:
+        quantity = pow(10, (zzz-3))
+        description = 'Energy'
+        si_unit = '{}Wh'.format(quantity)
+    elif code == 1:
+        quantity = pow(10, (zzz-3))
+        description = 'Energy'
+        si_unit = '{}kJ'.format(quantity)
+    elif code == 2:
+        quantity = pow(10, (zzz-6))
+        description = 'Volume'
+        si_unit = '{}m^3'.format(quantity)
+    elif code == 3:
+        quantity = pow(10, (zzz-3))
+        description = 'Mass'
+        si_unit = '{}kg'.format(quantity)
+    elif code == 4:
+        quantity = pow(10, (zzz-3))
+        description = 'Time stuff'
+        si_unit = '{}hhh'.format(quantity)
+    elif code == 5:
+        quantity = pow(10, (zzz-3))
+        description = 'Power'
+        si_unit = '{}W'.format(quantity)
+    elif code == 6:
+        quantity = pow(10, (zzz-3))
+        description = 'Power'
+        si_unit = '{}kJ/h'.format(quantity)
+    elif code == 7:
+        quantity = pow(10, (zzz-6))
+        description = 'Volume Flow'
+        si_unit = '{}m^3/h'.format(quantity)
+    else:
+        quantity = pow(10, (zzz-3))
+        description = 'Magic Dust'
+        si_unit = '{}kg'.format(quantity)
+
+    return extension_bit, description, si_unit
+
+
 class MBusTelegram:
     raw = b''
     hex_list = []
@@ -148,11 +215,8 @@ class MBusTelegram:
                          'ver', 'medium', 'access', 'status', 'sig1', 'sig2']
     format = ''
     type = ''
-    identification = 0
-    manufacturer = ''
-    medium = ''
-    unit = ''
-    value = 0
+
+    data_blocks = []
     mdh = False
 
     def __init__(self, t):
@@ -179,9 +243,6 @@ class MBusTelegram:
         else:  # More than 5 bytes, Long Frame, SND_UD or RSP_UD. Data transfer, both ways.
             self.format = 'LONG'
 
-            # Manufacturer specific data present?
-            self.mdh = '0F' in self.hex_list[19:] or '1F' in self.hex_list[19:]
-
             # Telegram header
             self.fields = dict(zip(self.keywords_long, self.hex_list))
 
@@ -193,32 +254,40 @@ class MBusTelegram:
             elif self.fields['control'] == '08' or self.fields['control'] == '18':
                 self.type = 'RSP_UD'
 
+                # Manufacturer specific data present?
+                self.mdh = '0F' in self.hex_list[19:] or '1F' in self.hex_list[19:]
+
                 # Fixed data header
                 d = dict(zip(self.fixed_data_header, self.hex_list[7:19]))
-                self.identification = d['id4'] + d['id3'] + d['id2'] + d['id1']
-                self.manufacturer = decode_mf(d['mf1'], d['mf2'])
-                self.medium = decode_medium(d['medium'])
+                identification = d['id4'] + d['id3'] + d['id2'] + d['id1']
+                self.fields.update({'id': identification})
+                manufacturer = decode_mf(d['mf1'], d['mf2'])
+                self.fields.update({'mf': manufacturer})
+                medium = decode_medium(d['medium'])
+                self.fields.update({'medium': medium})
 
-                # TODO: Parse Data!
-                # Variable Data Blocks
-                # DIF:  Data info field = 1byte
-                # DIFE: Data info field extension = 0-10bytes
-                # VIF:  Value info field = 1byte
-                # VIFE: Value info field extension = 0-10bytes
-                # DATA!
-
-                # 1. Handle DIB, 1-11 bytes
-                # Hack, DIF >= 128 == Extension bit set!
-                # DIF = ext-bit, LSB of storage number-bit, 2-bit function field,
-                # 4-bit data field describing length and coding of data
-
-                # 2. Handle VIB, 1-11 bytes
-                # VIF = ext-bit, 7-bit unit and multiplier(value), check chapter 8.4.3
-
-                # 3. Read appropriate data, as described in 1.
-
-                # 4. Go to 1.
-
+                user_data_list = self.hex_list[19:-2]
+                while user_data_list:
+                    dif = user_data_list.pop(0)
+                    ext_d, func, coding, length = decode_dif(dif)
+                    if ext_d:
+                        user_data_list.pop(0)  # dife
+                        # do dis 0-10 times
+                    vif = user_data_list.pop(0)
+                    ext_v, description, unit = decode_vif(vif)
+                    if ext_v:
+                        user_data_list.pop(0)  # vife
+                        # do dis 0-10 times
+                    data_data = ''
+                    for x in range(length):
+                        data_data = user_data_list.pop(0) + data_data
+                    value = 0
+                    if 'BCD' in coding:
+                        value = int(data_data)
+                    else:
+                        value = int(data_data, 16)
+                    user_data_block = [coding, func, description, value, unit]
+                    self.data_blocks.append(user_data_block)
 
         assert self.type in TELEGRAM_TYPE
         assert self.format in TELEGRAM_FORMAT
@@ -227,6 +296,21 @@ class MBusTelegram:
     def __str__(self):
         return ':'.join(self.hex_list)
 
+    def pretty_print(self):
+        """ Return a readable string with the important parts of the telegram """
+        part_one = 'Address: {}\nID: {}\nManufacturer: {}\nMedium: {}\n'.format(self.fields['address'],
+                                                                                self.fields['id'],
+                                                                                self.fields['manufacturer'],
+                                                                                self.fields['medium'])
+        part_two = ''
+        for block in self.data_blocks:
+            part_two += self.pretty_data_block(block)
+
+        return part_one + part_two
+
+    def pretty_data_block(self, data_block):
+        """ Return a readable string representing a block of data """
+        return 'Coding: {0[0]}\nType: {0[1]}{0[2]}\nValue: {0[3]}{0[4]}'.format(data_block)
 
 # self.L = self.hex_list[1]
 # self.C = self.hex_list[4]

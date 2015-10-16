@@ -93,9 +93,9 @@ if __name__ == '__main__':
                         00:00:84:21:07:00:00:00:00:84:31:07:00:00:00:00:84:41:14:00:00:00:00:84:81:40:14:00:00:\
                         00:00:9D:16'.split(':')))
                         # response = MBus.rsp_ud(mbt.A, meter_units[mbt.A].get_value())
-                        mbt_r = MBus.MBusTelegram(response)
-                        print('Responded with value {} [{}]'.format(
-                            meter_units[int(mbt.fields['address'])].get_value(), mbt_r))
+                        # mbt_r = MBus.MBusTelegram(response)
+                        # print('Responded with value {} [{}]'.format(
+                        #     meter_units[int(mbt.fields['address'])].get_value(), mbt_r))
                         client_socket.sendall(response)
                 telegram = client_socket.recv(1024)
         except ConnectionResetError:
