@@ -122,10 +122,10 @@ def decode_mf(b1, b2):
 
 def decode_medium(m):
     list_of_mediums = ['Other', 'Oil', 'Electricity', 'Gas',
-                       'Heat', 'Steam', 'Hot Water', 'Water',
+                       'Heat (Outlet)', 'Steam', 'Hot Water', 'Water',
                        'Heat Cost Allocator', 'Compressed Air',
-                       'Cooling load meter', 'Cooling load meter',
-                       'Heat', 'Heat / Cooling load meter',
+                       'Cooling Load Meter (Outlet)', 'Cooling Load Meter (Inlet)',
+                       'Heat (Inlet)', 'Heat / Cooling Load Meter',
                        'Bus / System', 'Unknown Medium', 'Reserved',
                        'Reserved', 'Reserved', 'Reserved', 'Reserved',
                        'Reserved', 'Cold Water', 'Dual Water',
@@ -141,7 +141,7 @@ def decode_dif(dif):
     dif = int(dif, 16)
     extension_bit = (dif & 0x80) != 0
     # LSB_of_storage = (dif & 0x40) != 0
-    function_field = (dif & 0x30)
+    function_field = (dif & 0x30) >> 4
     data_field = (dif & 0x0F)
 
     # The function field gives the type of data as follows:
@@ -159,6 +159,18 @@ def decode_dif(dif):
         data_codes[data_field], data_length[data_field]
 
 
+def decode_dife(dife):
+    dife = int(dife, 16)
+    extension_bit = (dife & 0x80) != 0
+    return extension_bit
+
+
+def decode_vife(vife):
+    vife = int(vife, 16)
+    extension_bit = (vife & 0x80) != 0
+    return extension_bit
+
+
 def decode_vif(vif):
     vif = int(vif, 16)
     extension_bit = (vif & 0x80) != 0
@@ -173,9 +185,9 @@ def decode_vif(vif):
         description = 'Energy'
         si_unit = '{}kJ'.format(quantity)
     elif code == 2:
-        quantity = pow(10, (zzz-6))
+        quantity = pow(10, (zzz-3))
         description = 'Volume'
-        si_unit = '{}m^3'.format(quantity)
+        si_unit = '{}L'.format(quantity)
     elif code == 3:
         quantity = pow(10, (zzz-3))
         description = 'Mass'
@@ -193,9 +205,9 @@ def decode_vif(vif):
         description = 'Power'
         si_unit = '{}kJ/h'.format(quantity)
     elif code == 7:
-        quantity = pow(10, (zzz-6))
+        quantity = pow(10, (zzz-3))
         description = 'Volume Flow'
-        si_unit = '{}m^3/h'.format(quantity)
+        si_unit = '{}L/h'.format(quantity)
     else:
         quantity = pow(10, (zzz-3))
         description = 'Magic Dust'
@@ -271,22 +283,26 @@ class MBusTelegram:
                     dif = user_data_list.pop(0)
                     ext_d, func, coding, length = decode_dif(dif)
                     if ext_d:
-                        user_data_list.pop(0)  # dife
-                        # do dis 0-10 times
+                        dife = user_data_list.pop(0)
+                        while decode_dife(dife):  # do dis 0-10 times
+                            dife = user_data_list.pop(0)
                     vif = user_data_list.pop(0)
                     ext_v, description, unit = decode_vif(vif)
                     if ext_v:
-                        user_data_list.pop(0)  # vife
-                        # do dis 0-10 times
+                        vife = user_data_list.pop(0)
+                        while decode_vife(vife):  # do dis 0-10 times
+                            vife = user_data_list.pop(0)
                     data_data = ''
                     for x in range(length):
                         data_data = user_data_list.pop(0) + data_data
                     value = 0
-                    if 'BCD' in coding:
-                        value = int(data_data)
-                    else:
-                        value = int(data_data, 16)
+                    if data_data:
+                        if 'BCD' in coding:
+                            value = int(data_data)
+                        else:
+                            value = int(data_data, 16)
                     user_data_block = [coding, func, description, value, unit]
+                    # self.pretty_data_block(user_data_block)
                     self.data_blocks.append(user_data_block)
 
         assert self.type in TELEGRAM_TYPE
@@ -298,9 +314,9 @@ class MBusTelegram:
 
     def pretty_print(self):
         """ Return a readable string with the important parts of the telegram """
-        part_one = 'Address: {}\nID: {}\nManufacturer: {}\nMedium: {}\n'.format(self.fields['address'],
+        part_one = 'Address: {}\nID: {}\nManufacturer: {}\nMedium: {}\n\n'.format(self.fields['address'],
                                                                                 self.fields['id'],
-                                                                                self.fields['manufacturer'],
+                                                                                self.fields['mf'],
                                                                                 self.fields['medium'])
         part_two = ''
         for block in self.data_blocks:
@@ -310,7 +326,7 @@ class MBusTelegram:
 
     def pretty_data_block(self, data_block):
         """ Return a readable string representing a block of data """
-        return 'Coding: {0[0]}\nType: {0[1]}{0[2]}\nValue: {0[3]}{0[4]}'.format(data_block)
+        return '\nCoding: {0[0]}\nType: {0[1]}{0[2]}\nValue: {0[3]} {0[4]}\n'.format(data_block)
 
 # self.L = self.hex_list[1]
 # self.C = self.hex_list[4]
