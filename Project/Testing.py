@@ -1,9 +1,8 @@
 import MBus
-m = MBus.rsp_ud(1, 69)
-mbt = MBus.MBusTelegram(m)
-print(mbt)
-print(MBus.rev(format(69, '02X')))
-print(bytes.fromhex(MBus.rev(format(3415, '02X'))))
+print(len('1234'))
+print(b'\x12\x34\x05')
+print(bytes.fromhex('123405'))
+print(bytes.fromhex(MBus.rev(str(53412))))
 # print(sum(bytes.fromhex('9988FF')))
 # print(sum(bytes.fromhex(MBus.rev('9988FF'))))
 # foo = bytes.fromhex(str(hex(24))[2:4])  # stupid, use below instead

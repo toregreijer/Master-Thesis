@@ -52,10 +52,10 @@ def snd_nke(a):
 
 def snd_nke_2(a):
     addr = bytes.fromhex(rev(str(a)))
-    cs = bytes.fromhex(hex(0x5BE + sum(addr))[-2:])
-    while len(addr) < 8:
+    cs = bytes.fromhex(hex(0x59E + sum(addr))[-2:])
+    while len(addr) < 4:
         addr += b'\x00'
-    return b'\x68\x0B\x0B\x68\x53\xFD\x52\x88\x18\x90\x14\xFF\xFF\xFF\xFF\xE2\x16'
+    return b'\x68\x0B\x0B\x68\x53\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
 
 
 def req_ud2(a):
@@ -106,8 +106,8 @@ def rev(h):
     for i in range(len(original)//2):
         result = original[:2] + result
         original = original[2:]
-    while len(result) < 12:
-        result += '00'
+    # while len(result) < 12:
+    #    result += '00'
     return result
 
 

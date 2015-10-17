@@ -49,13 +49,13 @@ def request_data(address):
 
 def ping(address):
     """ Ping address and return the result, True or False. """
-    # print('Sent: {}'.format(':'.join(MBus.snd_nke(address))))
-    return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
+    print('Sent: {}'.format(MBus.snd_nke(address)))
+    return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
 
 
 def ping_secondary_addr(address):
-    # print('Sent: {}'.format(':'.join(MBus.snd_nke_2(address))))
-    return MBus.parse_telegram(nm.send(MBus.extra_req_ud2(address)))
+    print('Sent: {}'.format(MBus.snd_nke_2(address)))
+    return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
 
 
 if __name__ == '__main__':
@@ -72,8 +72,8 @@ if __name__ == '__main__':
         choice = input('Please select option:\n'
                        '1. Scan MBus for units.\n'
                        '2. Request data from one unit.\n'
-                       '3. PING1 // Print collected data for one unit.\n'
-                       '4. PING2 // Connect to an MBus.\n'
+                       '3. Ping one unit.\n'
+                       '4. Placeholder.\n'
                        '5. Options\n'
                        '6. Speed Test\n'
                        '7. Exit\n'
@@ -85,9 +85,12 @@ if __name__ == '__main__':
             # while not target.isdigit() and 0 > int(target) > 255:
             target = input('Which unit? [0-255]  ')
             request_data(int(target))
-        elif choice in ('3', 'print', 'p'):
-            target = input('Which unit? ')
-            c = ping(int(target))
+        elif choice in ('3', 'ping', 'p'):
+            target = int(input('Which unit? '))
+            if target > 250:
+                c = ping_secondary_addr(target)
+            else:
+                c = ping(int(target))
             print(c)
         elif choice in ('4', 'connect', 'c'):
             target = input('Which unit? ')
