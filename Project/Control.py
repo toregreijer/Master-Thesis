@@ -50,7 +50,7 @@ def request_data(address):
 def ping(address):
     """ Ping address and return the result, True or False. """
     # print('Sent: {}'.format(':'.join(MBus.snd_nke(address))))
-    return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
+    return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
 
 
 def ping_secondary_addr(address):
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     print('Setting up database...')
     setup_db()
     print('Database ready.')
-    nm = NetworkManager()
+    nm = NetworkManager(remote_host)
     # nm.open_remote_socket(remote_host, port)
     user_choice = ''
     # print('Connection established.')
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         elif choice in ('3', 'print', 'p'):
             target = input('Which unit? ')
             c = ping(int(target))
-            print(c.fields)
+            print(c)
         elif choice in ('4', 'connect', 'c'):
             target = input('Which unit? ')
             print(ping_secondary_addr(int(target)))

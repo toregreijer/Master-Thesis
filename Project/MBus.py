@@ -55,7 +55,7 @@ def snd_nke_2(a):
     cs = bytes.fromhex(hex(0x5BE + sum(addr))[-2:])
     while len(addr) < 8:
         addr += b'\x00'
-    return b'\x68\x0B\x0B\x68\x73\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
+    return b'\x68\x0B\x0B\x68\x53\xFD\x52\x88\x18\x90\x14\xFF\xFF\xFF\xFF\xE2\x16'
 
 
 def req_ud2(a):
@@ -194,7 +194,7 @@ def decode_vif(vif):
         si_unit = '{}kg'.format(quantity)
     elif code == 4:
         quantity = pow(10, (zzz-3))
-        description = 'Time stuff'
+        description = 'Time stuff ******************************'
         si_unit = '{}hhh'.format(quantity)
     elif code == 5:
         quantity = pow(10, (zzz-3))
@@ -207,6 +207,38 @@ def decode_vif(vif):
     elif code == 7:
         quantity = pow(10, (zzz-3))
         description = 'Volume Flow'
+        si_unit = '{}L/h'.format(quantity)
+    elif code == 8:
+        quantity = pow(10, (zzz-4))
+        description = 'Volume Flow Ext.'
+        si_unit = '{}L/min'.format(quantity)
+    elif code == 9:
+        quantity = pow(10, (zzz-6))
+        description = 'Volume Flow Ext.'
+        si_unit = '{}L/s'.format(quantity)
+    elif code == 10:
+        quantity = pow(10, (zzz-3))
+        description = 'Mass Flow'
+        si_unit = '{}kg/h'.format(quantity)
+    elif code == 11:
+        quantity = pow(10, (zzz-3))
+        description = 'Flow Temperature / Return Temperature  *******'
+        si_unit = '{}C'.format(quantity)
+    elif code == 12:
+        quantity = pow(10, (zzz-3))
+        description = 'Temp diff (K)/ External temp (C)'
+        si_unit = '{}K'.format(quantity)
+    elif code == 13:
+        quantity = pow(10, (zzz-3))
+        description = 'Pressure (bar)/ Time point (time)/ Units for HCA / Reserved'
+        si_unit = '{}L/h'.format(quantity)
+    elif code == 14:
+        quantity = pow(10, (zzz-3))
+        description = 'Averaging Duration (timecoded) / Actuality duration'
+        si_unit = '{}L/h'.format(quantity)
+    elif code == 15:
+        quantity = pow(10, (zzz-3))
+        description = 'Fabrication Number / Enhanced / Bus Address'
         si_unit = '{}L/h'.format(quantity)
     else:
         quantity = pow(10, (zzz-3))
@@ -313,6 +345,9 @@ class MBusTelegram:
         return ':'.join(self.hex_list)
 
     def pretty_print(self):
+        if self is None:  # Shouldn't happen!
+            return
+
         """ Return a readable string with the important parts of the telegram """
         part_one = 'Address: {}\nID: {}\nManufacturer: {}\nMedium: {}\n\n'.format(self.fields['address'],
                                                                                 self.fields['id'],
