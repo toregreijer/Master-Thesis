@@ -2,6 +2,7 @@ from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
 from datetime import datetime
 import MBus
+import csv
 
 remote_host = '192.168.1.41'
 port = 2401
@@ -12,7 +13,7 @@ alive = 1
 def scan():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
-    for x in range(51, 52):
+    for x in range(1, 250):
             if ping(x):
                 list_of_addresses.append(x)
                 print('Discovered unit at address {}!'.format(x))
@@ -22,8 +23,8 @@ def scan():
 def scan_secondary():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
-    for x in range(0, 1000):
-            if ping_secondary_addr(x):
+    for x in range(11111111, 99999999):
+            if ping(x):
                 list_of_addresses.append(x)
                 print('Discovered unit at address {}!'.format(x))
     return list_of_addresses
@@ -49,14 +50,23 @@ def request_data(address):
 
 def ping(address):
     """ Ping address and return the result, True or False. """
-    print('Sent: {}'.format(MBus.snd_nke(address)))
-    return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
+    address = int(address)
+    if address > 250:
+        print('Sent: {}'.format(MBus.parse_telegram(MBus.snd_nke_2(address))))
+        return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
+    else:
+        print('Sent: {}'.format(MBus.parse_telegram(MBus.snd_nke(address))))
+        return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
 
 
-def ping_secondary_addr(address):
-    print('Sent: {}'.format(MBus.snd_nke_2(address)))
-    return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
-
+def read_file(file):
+    res = []
+    with open(file, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        for row in reader:
+            if row[1].isdigit():
+                res.append(int(row[1]))
+    return res
 
 if __name__ == '__main__':
     print('Welcome to the Control Unit, please wait a moment!')
@@ -73,7 +83,7 @@ if __name__ == '__main__':
                        '1. Scan MBus for units.\n'
                        '2. Request data from one unit.\n'
                        '3. Ping one unit.\n'
-                       '4. Placeholder.\n'
+                       '4. Get addresses from file.\n'
                        '5. Options\n'
                        '6. Speed Test\n'
                        '7. Exit\n'
@@ -81,27 +91,23 @@ if __name__ == '__main__':
         if choice in ('1', 'scan', 's'):
             list_of_meter_units = scan()
         elif choice in ('2', 'request', 'r'):
-            # TODO: Sanitize the input
-            # while not target.isdigit() and 0 > int(target) > 255:
-            target = input('Which unit? [0-255]  ')
+            target = input('Which unit?')
             request_data(int(target))
         elif choice in ('3', 'ping', 'p'):
             target = int(input('Which unit? '))
-            if target > 250:
-                c = ping_secondary_addr(target)
-            else:
-                c = ping(int(target))
-            print(c)
-        elif choice in ('4', 'connect', 'c'):
-            target = input('Which unit? ')
-            print(ping_secondary_addr(int(target)))
+            print(ping(target))
+        elif choice in ('4', 'get', 'g'):
+            target = 'list_of_devices.csv'  # input('Which file? ')
+            list_of_meter_units = read_file(target)
+            print(list_of_meter_units)
         elif choice in ('5', 'options', 'o'):
             remote_host = input('Remote host? ')
             port = int(input('Port? '))
         elif choice in ('6', 'speed'):
-            for i in range(30):
+            for i in range(3):
                 for u in list_of_meter_units:
-                    request_data(u)
+                    ping(u)
+                    # request_data(u)
         elif choice in ('7', 'exit', 'e'):
             break
     print('Exiting, goodbye!')
