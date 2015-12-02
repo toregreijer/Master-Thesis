@@ -1,8 +1,9 @@
 from NetworkCode import NetworkManager
 from DatabaseCode import open_and_store, setup_db
-from datetime import datetime
+from time import sleep
 import MBus
 import csv
+
 
 remote_host = '192.168.1.41'
 port = 2401
@@ -14,9 +15,10 @@ def scan():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
     for x in range(1, 250):
-            if ping(x):
-                list_of_addresses.append(x)
-                print('Discovered unit at address {}!'.format(x))
+        sleep(10)
+        if ping(x):
+            list_of_addresses.append(x)
+            print('Discovered unit at address {}!'.format(x))
     return list_of_addresses
 
 
@@ -32,31 +34,37 @@ def scan_secondary():
 
 def request_data(address):
     """ Send REQ_UD2 to (address), store the response in the database. """
-    # rq = MBus_Telegram(address, 'REQ_UD2'))
-    # tmp = nm.send(rq.raw)
-    tmp = nm.send(MBus.req_ud2(address))
-    if tmp:
-        tmp = MBus.parse_telegram(tmp)
-        print('{}: Sent request to {}, got {} back!'.format(datetime.now(), address, tmp))
-        print(tmp.pretty_print())
+    # print(ping(address))
+    # sleep2(1)
+    # if address > 250:
+    #    mbus_response = nm.send(MBus.req_ud2(0xFD))
+    # else:
+    mbus_response = nm.send(MBus.req_ud2(address))
+    print('Sent: {}'.format(MBus.pretty_hex(MBus.req_ud2(address))))
+    print('Received: {}'.format(MBus.pretty_hex(mbus_response)))
+    if mbus_response:
+        mbus_response = MBus.parse_telegram(mbus_response)
+        print(MBus.pretty_print(mbus_response))  # Change to debug only
 
-        # TODO: Parse the input, so we can store it accurately
         print('Storing stuff in database...')
-        open_and_store(tmp.raw)
+        open_and_store(mbus_response)
     else:
-        print('{}: Sent request to {}, but did not get a response.'.format(datetime.now(), address))
-    print('Done!')
+        print('Sent request to {}, but did not get a response.'.format(address))
 
 
 def ping(address):
     """ Ping address and return the result, True or False. """
     address = int(address)
-    if address > 250:
-        print('Sent: {}'.format(MBus.parse_telegram(MBus.snd_nke_2(address))))
-        return MBus.parse_telegram(nm.send(MBus.snd_nke_2(address)))
+    print('Sent: {}'.format(MBus.parse_telegram(MBus.snd_nke(address))))
+    return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
+
+
+def send_custom(t):
+    response = nm.send(bytes.fromhex(t))
+    if response is None:
+        return 'No response'
     else:
-        print('Sent: {}'.format(MBus.parse_telegram(MBus.snd_nke(address))))
-        return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
+        return MBus.parse_telegram(response)
 
 
 def read_file(file):
@@ -73,7 +81,7 @@ if __name__ == '__main__':
     print('Setting up database...')
     setup_db()
     print('Database ready.')
-    nm = NetworkManager(remote_host)
+    nm = NetworkManager()
     # nm.open_remote_socket(remote_host, port)
     user_choice = ''
     # print('Connection established.')
@@ -84,15 +92,15 @@ if __name__ == '__main__':
                        '2. Request data from one unit.\n'
                        '3. Ping one unit.\n'
                        '4. Get addresses from file.\n'
-                       '5. Options\n'
+                       '5. Custom telegram\n'
                        '6. Speed Test\n'
                        '7. Exit\n'
                        ': ')
         if choice in ('1', 'scan', 's'):
             list_of_meter_units = scan()
         elif choice in ('2', 'request', 'r'):
-            target = input('Which unit?')
-            request_data(int(target))
+            target = int(input('Which unit? '))
+            request_data(target)
         elif choice in ('3', 'ping', 'p'):
             target = int(input('Which unit? '))
             print(ping(target))
@@ -100,9 +108,9 @@ if __name__ == '__main__':
             target = 'list_of_devices.csv'  # input('Which file? ')
             list_of_meter_units = read_file(target)
             print(list_of_meter_units)
-        elif choice in ('5', 'options', 'o'):
-            remote_host = input('Remote host? ')
-            port = int(input('Port? '))
+        elif choice in ('5', 'custom', 'c'):
+            txt = input(': ')
+            print(send_custom(txt))
         elif choice in ('6', 'speed'):
             for i in range(3):
                 for u in list_of_meter_units:

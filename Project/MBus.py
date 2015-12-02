@@ -45,29 +45,32 @@ def parse_telegram(t):
 
 
 def snd_nke(a):
-    hex_addr = b(a)                 # bytes.fromhex(format(a, '02X'))
-    hex_checksum = b(0x40+a)        # bytes.fromhex(format(0x40 + a, '02X')[-2:])
-    return b'\x10\x40' + hex_addr + hex_checksum + b'\x16'
-
-
-def snd_nke_2(a):
-    addr = bytes.fromhex(rev(str(a)))
-    cs = bytes.fromhex(hex(0x59E + sum(addr))[-2:])
-    while len(addr) < 4:
-        addr += b'\x00'
-    return b'\x68\x0B\x0B\x68\x53\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
+    if a <= 250:
+        hex_addr = b(a)
+        hex_checksum = b(0x40+a)
+        return b'\x10\x40' + hex_addr + hex_checksum + b'\x16'
+    else:
+        addr = bytes.fromhex(rev(str(a)))
+        cs = bytes.fromhex(hex(0x59E + sum(addr))[-2:])
+        while len(addr) < 4:
+            addr += b'\x00'
+        return b'\x68\x0B\x0B\x68\x53\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
 
 
 def req_ud2(a):
-    hex_addr = b(a)                 # bytes.fromhex(format(a, '02X'))
-    hex_checksum = b(0x5B+a)        # bytes.fromhex(format(0x5B + a, '02X')[-2:])
-    return b'\x10\x5B' + hex_addr + hex_checksum + b'\x16'
-
-
-def extra_req_ud2(a):
-    hex_addr = b(a)                 # bytes.fromhex(format(a, '02X'))
-    hex_checksum = b(0x5B+a)        # bytes.fromhex(format(0x5B + a, '02X')[-2:])
-    return b'\x10\x7B' + hex_addr + hex_checksum + b'\x16'
+    # TODO: Add functionality to handle both primary and secondary addresses
+    if a > 250:
+        return b'\x10\x7B\xFD\x78\x16'
+    else:
+        hex_addr = b(a)
+        hex_checksum = b(0x7B+a)
+        return b'\x10\x7B' + hex_addr + hex_checksum + b'\x16'
+    # else:
+        # addr = bytes.fromhex(rev(str(a)))
+        # cs = bytes.fromhex(hex(0x5A6 + sum(addr))[-2:])
+        # while len(addr) < 4:
+        #     addr += b'\x00'
+        # return b'\x68\x0B\x0B\x68\x5B\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
 
 
 def rsp_ud(a, value):
@@ -234,7 +237,7 @@ def decode_vif(vif):
         si_unit = '{}L/h'.format(quantity)
     elif code == 14:
         quantity = pow(10, (zzz-3))
-        description = 'Averaging Duration (timecoded) / Actuality duration'
+        description = 'Averaging Duration (time coded) / Actuality duration'
         si_unit = '{}L/h'.format(quantity)
     elif code == 15:
         quantity = pow(10, (zzz-3))
@@ -248,10 +251,38 @@ def decode_vif(vif):
     return extension_bit, description, si_unit
 
 
+def pretty_data_block(data_block):
+    """ Return a readable string representing a block of data """
+    return '\nCoding: {0[0]}\nType: {0[1]}{0[2]}\nValue: {0[3]} {0[4]}\n'.format(data_block)
+
+
+def pretty_hex(bs):
+    if bs is None:
+        return
+    else:
+        return ':'.join([format(x, '02X') for x in bs])
+
+
+def pretty_print(mbt):
+    """ Return a readable string with the important parts of the telegram """
+    part_one = 'Address: {} (Hexadecimal)\n' \
+               'ID: {}\n' \
+               'Manufacturer: {}\n' \
+               'Medium: {}\n'.format(mbt.fields['address'],
+                                     mbt.fields['id'],
+                                     mbt.fields['mf'],
+                                     mbt.fields['medium'])
+    part_two = ''
+    for block in mbt.data_blocks:
+        part_two += pretty_data_block(block)
+
+    return part_one + part_two
+
+
 class MBusTelegram:
     raw = b''
     hex_list = []
-    fields = None
+    fields = None   # [keywords, id, mf, medium]
     keywords_short = ['start', 'control', 'address', 'checksum', 'stop']
     keywords_long = ['start', 'length', 'length', 'start',
                      'control', 'address', 'control_info']
@@ -260,12 +291,13 @@ class MBusTelegram:
     format = ''
     type = ''
 
-    data_blocks = []
+    data_blocks = []    # coding, func, description, value, unit
     mdh = False
 
     def __init__(self, t):
         self.raw = t
         self.hex_list = [format(x, '02X') for x in t]
+        del self.data_blocks[:]
         if len(t) == 1:  # 1 byte, ACK, Slave -> Master
             self.format = 'SINGLE'
             self.type = 'ACK'
@@ -343,28 +375,3 @@ class MBusTelegram:
 
     def __str__(self):
         return ':'.join(self.hex_list)
-
-    def pretty_print(self):
-        if self is None:  # Shouldn't happen!
-            return
-
-        """ Return a readable string with the important parts of the telegram """
-        part_one = 'Address: {}\nID: {}\nManufacturer: {}\nMedium: {}\n\n'.format(self.fields['address'],
-                                                                                self.fields['id'],
-                                                                                self.fields['mf'],
-                                                                                self.fields['medium'])
-        part_two = ''
-        for block in self.data_blocks:
-            part_two += self.pretty_data_block(block)
-
-        return part_one + part_two
-
-    def pretty_data_block(self, data_block):
-        """ Return a readable string representing a block of data """
-        return '\nCoding: {0[0]}\nType: {0[1]}{0[2]}\nValue: {0[3]} {0[4]}\n'.format(data_block)
-
-# self.L = self.hex_list[1]
-# self.C = self.hex_list[4]
-# self.A = self.hex_list[5]  # hexadecimal address, use "int(self.hex_list[2], 16)" to get integer address
-# self.CI = self.hex_list[6]
-# self.CS = self.hex_list[-1:]

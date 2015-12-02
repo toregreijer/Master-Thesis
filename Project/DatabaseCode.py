@@ -1,10 +1,15 @@
 import sqlite3
+import MBus
 
 sqlite_file = 'the_great_db.sqlite'
 table1 = 'house001'
-field1 = 'unit_name'
-field2 = 'datetime'
-field3 = 'value'
+field1 = 'datetime'
+field2 = 'unit_id'
+field3 = 'manufacturer'
+field4 = 'type'
+field5 = 'medium'
+field6 = 'value'
+field7 = 'unit'
 t = 'table'
 
 
@@ -16,20 +21,62 @@ def setup_db():
     if c.fetchone():
         print('Found a local database, setting it up for further use...')
     else:
+        # Databasens struktur: datetime, ID(sec addr), Manufacturer, type(insta val),
+        # medium(water), value(2598), unit(1L)
         print('No database exists, creating a new one...')
-        c.execute('CREATE TABLE {tn} ({fn1} {ft1}, '
-                  '{fn2} DATETIME DEFAULT CURRENT_TIMESTAMP, '
-                  '{fn3} {ft3})'
-                  .format(tn=table1, fn1=field1, ft1='TEXT', fn2=field2, fn3=field3, ft3='INTEGER'))
+        c.execute('CREATE TABLE {tn} ('
+                  '{fn1} DATETIME DEFAULT CURRENT_TIMESTAMP, '
+                  '{fn2} TEXT, '
+                  '{fn3} TEXT, '
+                  '{fn4} TEXT, '
+                  '{fn5} TEXT, '
+                  '{fn6} TEXT, '
+                  '{fn7} TEXT  '
+                  ')'
+                  .format(tn=table1,
+                          fn1=field1,
+                          fn2=field2,
+                          fn3=field3,
+                          fn4=field4,
+                          fn5=field5,
+                          fn6=field6,
+                          fn7=field7))
         conn.commit()
     conn.close()
 
 
-def open_and_store(data):
-    """ Open a connection to the db and store the provided data. """
+def open_and_store(m):
+    """ Open a connection to the db and store the provided mbus telegram. """
+
     conn, c = connect()
-    c.execute('INSERT INTO {tn} ({fn1}, {fn3}) VALUES ("house001", ?)'
-              .format(tn=table1, fn1=field1, fn3=field3), (data,))
+    # Databasens struktur: DATETIME, ID(sec_addr), MF, type(instant_val), Medium(water), Value(2598), Unit(1L)
+    # En post per datablock i telegrammet!
+    for b in m.data_blocks:
+        c.execute('INSERT INTO {tn} ('  # Insert into table 'house1'
+                  # '{fn1}, '  # datetime -- UNNECESSARY, GETS DEFAULT VALUE
+                  '{fn2}, '  # unit_id
+                  '{fn3}, '  # manufacturer
+                  '{fn4}, '  # type
+                  '{fn5}, '  # medium
+                  '{fn6}, '  # value
+                  '{fn7}) '  # unit
+                  'VALUES (?, ?, ?, ?, ?, ?)'
+                  .format(tn=table1,
+                          fn2=field2,
+                          fn3=field3,
+                          fn4=field4,
+                          fn5=field5,
+                          fn6=field6,
+                          fn7=field7
+                          ),
+                  (
+                      m.fields['id'],       # Unit ID
+                      m.fields['mf'],       # Manufacturer
+                      b[1]+' '+b[2],        # Type, e.g. "Instantaneous value"
+                      m.fields['medium'],   # Medium
+                      b[3],                 # Value
+                      b[4],                  # Unit
+                  ))
     close(conn)
 
 
