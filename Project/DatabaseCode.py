@@ -1,5 +1,4 @@
 import sqlite3
-import MBus
 
 sqlite_file = 'the_great_db.sqlite'
 table1 = 'house001'
