@@ -75,7 +75,7 @@ def open_and_store(m):
                       b[1]+' '+b[2],        # Type, e.g. "Instantaneous value"
                       m.fields['medium'],   # Medium
                       b[3],                 # Value
-                      b[4],                  # Unit
+                      b[4],                 # Unit
                   ))
     close(conn)
 
