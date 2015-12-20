@@ -22,7 +22,7 @@ class NetworkManager(object):
             self.close_remote_socket()
             return tmp
         except socket.timeout:
-            print('timeout error')
+            print('Timeout error')
             return
         except socket.error:
             print('SOCKET ERROR!')

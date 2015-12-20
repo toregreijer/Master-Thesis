@@ -1,4 +1,5 @@
 from random import randint
+from MBusExtensions import decode_vif, decode_vife, decode_vife_a, decode_vife_b
 
 
 TELEGRAM_SIZE = 5
@@ -141,119 +142,51 @@ def decode_medium(m):
 
 
 def decode_dif(dif):
+    # TODO: "Variable length" and "Special functions" code need further handling."
     dif = int(dif, 16)
+    # Shows if there's a DIFE following this DIF.
     extension_bit = (dif & 0x80) != 0
-    # LSB_of_storage = (dif & 0x40) != 0
+    # Least significant bit of storage number. 0: Actual value, 1: historic value. Higher numbers requires DIFE.
+    lsb_of_storage = (dif & 0x40) >> 6
+    # The function field gives the type of data as follows.
     function_field = (dif & 0x30) >> 4
-    data_field = (dif & 0x0F)
-
-    # The function field gives the type of data as follows:
     function_codes = ['Instantaneous ', 'Maximum ', 'Minimum ', 'Value during error state']
-
     # The data field shows how the data from the master must be interpreted in respect of length
     # and coding. The following table contains the possible coding of the data field:
+    data_field = (dif & 0x0F)
     data_codes = ['No data', '8bit Integer', '16bit Integer', '24bit Integer',
                   '32bit Integer', '32bit Real', '48bit Integer', '64bit Integer',
                   'Selection for Readout', '2 digit BCD', '4 digit BCD', '6 digit BCD',
                   '8 digit BCD', 'Variable length', '12 digit BCD', 'Special functions']
     data_length = [0, 1, 2, 3, 4, 4, 6, 8, 0, 1, 2, 3, 4, 1, 6, 0]
 
-    return extension_bit, function_codes[function_field], \
+    return extension_bit, lsb_of_storage, function_codes[function_field], \
         data_codes[data_field], data_length[data_field]
 
 
 def decode_dife(dife):
+    # TODO: Parse the other 7 bits.
     dife = int(dife, 16)
+    # Shows if there's another DIFE following this one.
     extension_bit = (dife & 0x80) != 0
-    return extension_bit
+    # Next most significant bit of the device subunit, from least to most, I think.
+    subunit = (dife & 0x40) >> 6
+    # Tariff code..?
+    tariff = (dife & 0x30) >> 4
+    # Next most significant bit of the storage number, from least to most, I think.
+    storage_bits = (dife & 0x0F)
 
-
-def decode_vife(vife):
-    vife = int(vife, 16)
-    extension_bit = (vife & 0x80) != 0
-    return extension_bit
-
-
-def decode_vif(vif):
-    vif = int(vif, 16)
-    extension_bit = (vif & 0x80) != 0
-    code = (vif & 0x7F) >> 3
-    zzz = vif & 0b00000111
-    if code == 0:
-        quantity = pow(10, (zzz-3))
-        description = 'Energy'
-        si_unit = '{}Wh'.format(quantity)
-    elif code == 1:
-        quantity = pow(10, (zzz-3))
-        description = 'Energy'
-        si_unit = '{}kJ'.format(quantity)
-    elif code == 2:
-        quantity = pow(10, (zzz-3))
-        description = 'Volume'
-        si_unit = '{}L'.format(quantity)
-    elif code == 3:
-        quantity = pow(10, (zzz-3))
-        description = 'Mass'
-        si_unit = '{}kg'.format(quantity)
-    elif code == 4:
-        quantity = pow(10, (zzz-3))
-        description = 'Time stuff ******************************'
-        si_unit = '{}hhh'.format(quantity)
-    elif code == 5:
-        quantity = pow(10, (zzz-3))
-        description = 'Power'
-        si_unit = '{}W'.format(quantity)
-    elif code == 6:
-        quantity = pow(10, (zzz-3))
-        description = 'Power'
-        si_unit = '{}kJ/h'.format(quantity)
-    elif code == 7:
-        quantity = pow(10, (zzz-3))
-        description = 'Volume Flow'
-        si_unit = '{}L/h'.format(quantity)
-    elif code == 8:
-        quantity = pow(10, (zzz-4))
-        description = 'Volume Flow Ext.'
-        si_unit = '{}L/min'.format(quantity)
-    elif code == 9:
-        quantity = pow(10, (zzz-6))
-        description = 'Volume Flow Ext.'
-        si_unit = '{}L/s'.format(quantity)
-    elif code == 10:
-        quantity = pow(10, (zzz-3))
-        description = 'Mass Flow'
-        si_unit = '{}kg/h'.format(quantity)
-    elif code == 11:
-        quantity = pow(10, (zzz-3))
-        description = 'Flow Temperature / Return Temperature  *******'
-        si_unit = '{}C'.format(quantity)
-    elif code == 12:
-        quantity = pow(10, (zzz-3))
-        description = 'Temp diff (K)/ External temp (C)'
-        si_unit = '{}K'.format(quantity)
-    elif code == 13:
-        quantity = pow(10, (zzz-3))
-        description = 'Pressure (bar)/ Time point (time)/ Units for HCA / Reserved'
-        si_unit = '{}L/h'.format(quantity)
-    elif code == 14:
-        quantity = pow(10, (zzz-3))
-        description = 'Averaging Duration (time coded) / Actuality duration'
-        si_unit = '{}L/h'.format(quantity)
-    elif code == 15:
-        quantity = pow(10, (zzz-3))
-        description = 'Fabrication Number / Enhanced / Bus Address'
-        si_unit = '{}L/h'.format(quantity)
-    else:
-        quantity = pow(10, (zzz-3))
-        description = 'Magic Dust'
-        si_unit = '{}kg'.format(quantity)
-
-    return extension_bit, description, si_unit
+    return extension_bit, subunit, tariff, storage_bits
 
 
 def pretty_data_block(data_block):
     """ Return a readable string representing a block of data """
-    return '\nCoding: {0[0]}\nType: {0[1]}{0[2]}\nValue: {0[3]} {0[4]}\n'.format(data_block)
+    return '\nCoding: {0[0]}\n' \
+           'Type: {0[1]}{0[2]}\n' \
+           'Value: {0[3]} {0[4]}\n' \
+           'Subunit: {0[5]}\n' \
+           'Tariff: {0[6]}\n' \
+           'Storage Number: {0[7]}\n'.format(data_block)
 
 
 def pretty_hex(bs):
@@ -265,6 +198,7 @@ def pretty_hex(bs):
 
 def pretty_print(mbt):
     """ Return a readable string with the important parts of the telegram """
+    # TODO: Subunit, tariff, and storage is only interesting if there was a DIF, so they aren't 0 0 0.
     part_one = 'Address: {} (Hexadecimal)\n' \
                'ID: {}\n' \
                'Manufacturer: {}\n' \
@@ -344,18 +278,46 @@ class MBusTelegram:
 
                 user_data_list = self.hex_list[19:-2]
                 while user_data_list:
+                    # Read and parse the DIF
                     dif = user_data_list.pop(0)
-                    ext_d, func, coding, length = decode_dif(dif)
-                    if ext_d:
+                    ext_d, lsb_of_storage, func, coding, length = decode_dif(dif)
+                    # After the DIF is parsed, parse 0-10 DIFE's.
+                    tmp_subunit = 0
+                    tmp_tariff = 0
+                    tmp_storage = 0
+                    dife_number = 0
+                    while ext_d:
                         dife = user_data_list.pop(0)
-                        while decode_dife(dife):  # do dis 0-10 times
-                            dife = user_data_list.pop(0)
+                        ext_d, subunit, tariff, storage = decode_dife(dife)
+                        if dife_number == 0:
+                            tmp_subunit = subunit
+                            tmp_tariff = tariff
+                            tmp_storage = storage
+                        else:
+                            tmp_subunit += (subunit << 1)
+                            tmp_tariff += (tariff << 2)
+                            tmp_storage += (storage << 4)
+                        dife_number += 1
+                    final_subunit = tmp_subunit
+                    final_tariff = tmp_tariff
+                    final_storage = (tmp_storage << 1) + lsb_of_storage
+
+                    # Read and parse the VIF
                     vif = user_data_list.pop(0)
                     ext_v, description, unit = decode_vif(vif)
-                    if ext_v:
+                    # After the VIF is parsed, parse 0-10 VIFE's.
+                    # Check to see if an extended VIF code needs to be read from the first VIFE
+                    if description.startswith('EXT_A'):
                         vife = user_data_list.pop(0)
-                        while decode_vife(vife):  # do dis 0-10 times
-                            vife = user_data_list.pop(0)
+                        ext_v, description, unit = decode_vife_a(vife)
+                    if description.startswith('EXT_B'):
+                        vife = user_data_list.pop(0)
+                        ext_v, description, unit = decode_vife_b(vife)
+                    while ext_v:
+                        vife = user_data_list.pop(0)
+                        ext_v, description, unit = decode_vife(vife)
+
+                    # After the data record header is done, parse the actual data.
                     data_data = ''
                     for x in range(length):
                         data_data = user_data_list.pop(0) + data_data
@@ -365,7 +327,9 @@ class MBusTelegram:
                             value = int(data_data)
                         else:
                             value = int(data_data, 16)
-                    user_data_block = [coding, func, description, value, unit]
+                    # TODO: Subunit, tariff, and storage is only interesting if there was a DIFE, so they aren't 0 0 0.
+                    user_data_block = [coding, func, description, value, unit,
+                                       final_subunit, final_tariff, final_storage]
                     # self.pretty_data_block(user_data_block)
                     self.data_blocks.append(user_data_block)
 

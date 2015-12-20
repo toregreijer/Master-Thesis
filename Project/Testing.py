@@ -3,7 +3,7 @@ import csv
 
 # print(len('1234'))
 # print(b'\x12\x34\x05')
-#print(bytes.fromhex('123405'))
+# print(bytes.fromhex('123405'))
 # print(bytes.fromhex(MBus.rev(str(53412))))
 # print(sum(bytes.fromhex('9988FF')))
 # print(sum(bytes.fromhex(MBus.rev('9988FF'))))

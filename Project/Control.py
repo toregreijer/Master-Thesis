@@ -14,8 +14,8 @@ alive = 1
 def scan():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
-    for x in range(1, 250):
-        sleep(10)
+    for x in range(0, 250):
+        sleep(1)
         if ping(x):
             list_of_addresses.append(x)
             print('Discovered unit at address {}!'.format(x))
@@ -81,12 +81,11 @@ if __name__ == '__main__':
     print('Setting up database...')
     setup_db()
     print('Database ready.')
-    nm = NetworkManager(remote_host)
+    nm = NetworkManager()
     # nm.open_remote_socket(remote_host, port)
     user_choice = ''
     # print('Connection established.')
     while alive:
-        # TODO: Add options for settings, and connecting to the MBus here instead
         choice = input('Please select option:\n'
                        '1. Scan MBus for units.\n'
                        '2. Request data from one unit.\n'
