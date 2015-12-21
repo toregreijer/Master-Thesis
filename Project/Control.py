@@ -81,7 +81,7 @@ if __name__ == '__main__':
     print('Setting up database...')
     setup_db()
     print('Database ready.')
-    nm = NetworkManager()
+    nm = NetworkManager(remote_host)
     # nm.open_remote_socket(remote_host, port)
     user_choice = ''
     # print('Connection established.')
@@ -92,7 +92,7 @@ if __name__ == '__main__':
                        '3. Ping one unit.\n'
                        '4. Get addresses from file.\n'
                        '5. Custom telegram\n'
-                       '6. Speed Test\n'
+                       '6. ---\n'
                        '7. Exit\n'
                        ': ')
         if choice in ('1', 'scan', 's'):
