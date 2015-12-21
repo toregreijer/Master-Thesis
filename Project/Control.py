@@ -92,7 +92,7 @@ if __name__ == '__main__':
                        '3. Ping one unit.\n'
                        '4. Get addresses from file.\n'
                        '5. Custom telegram\n'
-                       '6. ---\n'
+                       '6. Collect data\n'
                        '7. Exit\n'
                        ': ')
         if choice in ('1', 'scan', 's'):
@@ -110,11 +110,11 @@ if __name__ == '__main__':
         elif choice in ('5', 'custom', 'c'):
             txt = input(': ')
             print(send_custom(txt))
-        elif choice in ('6', 'speed'):
-            for i in range(3):
-                for u in list_of_meter_units:
-                    ping(u)
-                    # request_data(u)
+        elif choice in ('6', 'data', 'd'):
+            while True:
+                for i in range(0, 250):
+                    request_data(i)
+                    sleep(15)
         elif choice in ('7', 'exit', 'e'):
             break
     print('Exiting, goodbye!')
