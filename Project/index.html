@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<?php
+$db = new SQLite3('~/repos/mt/Master-Thesis/Project/the_great_db.sql');
+$results = $db->query('SELECT * FROM house001');
+while ($row = $results->fetchArray()) {
+    var_dump($row);
+}
+?>
+</body>
+</html>
