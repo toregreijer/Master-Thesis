@@ -21,7 +21,8 @@ XX_list = [format(x, '02X') for x in manual]    # ['10', '40', '0C', '86', '80',
 # print(int(list_of_hexes[1], 16))
 # print(len(manual))
 # print(XX_list)
-
+print(manual)
+print(manual[-1:])
 # print([int(x, 16) for x in XX_list])
 # print(bytes.fromhex(XX_list[2]))
 # print(bytes.fromhex(format(14, '02X')))
@@ -33,7 +34,7 @@ XX_list = [format(x, '02X') for x in manual]    # ['10', '40', '0C', '86', '80',
 # print(MBus.pretty_hex(68:15:15:68:08:33:72:54:42:00:13:B4:09:01:07:97:28:00:00:0C:13:91:29:00:00:B3:16))
 foo = MBus.parse_telegram(bytes.fromhex(' '.join('68:15:15:68:08:33:72:54:42:00:'
                           '13:B4:09:01:07:97:28:00:00:0C:13:91:29:00:00:B3:16'.split(':'))))
-print(MBus.pretty_print(foo))
+# print(MBus.pretty_print(foo))
 # 68:15:15:68:08:33:72:54:42:00:13:B4:09:01:07:97:28:00:00:0C:13:91:29:00:00:B3:16
 
 

@@ -6,7 +6,6 @@ import csv
 
 
 remote_host = '192.168.1.41'
-port = 2401
 list_of_meter_units = []
 alive = 1
 

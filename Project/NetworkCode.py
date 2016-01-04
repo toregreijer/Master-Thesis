@@ -3,7 +3,7 @@ import select
 
 
 class NetworkManager(object):
-    port = 2401
+    port = 300
     local_host = ''
     remote_host = ''
     server_socket = socket
@@ -19,6 +19,10 @@ class NetworkManager(object):
             self.remote_socket.settimeout(1)
             self.remote_socket.sendall(data)
             tmp = self.remote_socket.recv(1024)
+            if tmp != b'\xe5':
+                while tmp[-1:] != b'\x16':
+                    print(tmp)
+                    tmp += self.remote_socket.recv(1024)
             self.close_remote_socket()
             return tmp
         except socket.timeout:
