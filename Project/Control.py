@@ -83,13 +83,9 @@ if __name__ == '__main__':
     nm = NetworkManager(remote_host)
     # nm.open_remote_socket(remote_host, port)
     user_choice = ''
-    last_choice = ''
-    target = 1
     # print('Connection established.')
     while alive:
-        last_choice = user_choice
         choice = input('Please select option:\n'
-                       '0. Retry previous! (q)\n'
                        '1. Scan MBus for units.\n'
                        '2. Request data from one unit.\n'
                        '3. Ping one unit.\n'
@@ -98,10 +94,7 @@ if __name__ == '__main__':
                        '6. Collect data\n'
                        '7. Exit\n'
                        ': ')
-        user_choice = choice
-        if choice in ('0', 'q'):
-            choice = last_choice
-        elif choice in ('1', 'scan', 's'):
+        if choice in ('1', 'scan', 's'):
             list_of_meter_units = scan()
         elif choice in ('2', 'request', 'r'):
             target = int(input('Which unit? '))
