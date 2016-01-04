@@ -22,7 +22,7 @@ class NetworkManager(object):
             if tmp:
                 if tmp != b'\xe5':
                     while tmp[-1:] != b'\x16':
-                        print(tmp)
+                        # print(tmp)
                         tmp += self.remote_socket.recv(1024)
             self.close_remote_socket()
             return tmp
