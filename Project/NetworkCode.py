@@ -19,10 +19,10 @@ class NetworkManager(object):
             self.remote_socket.settimeout(1)
             self.remote_socket.sendall(data)
             tmp = self.remote_socket.recv(1024)
-            if tmp:
-                if tmp != b'\xe5':
-                    while tmp[-1:] != b'\x16':
-                        # print(tmp)
+            # Some handling for troublesome MBus communication
+            if tmp:  # Is the response more than None?
+                if tmp != b'\xe5':  # If so, is it more than a simple ACK (E5)?
+                    while tmp[-1:] != b'\x16':  # Then keep receiving until a complete telegram has arrived.
                         tmp += self.remote_socket.recv(1024)
             self.close_remote_socket()
             return tmp
