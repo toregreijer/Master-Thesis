@@ -111,7 +111,7 @@ if __name__ == '__main__':
             print(send_custom(txt))
         elif choice in ('6', 'data', 'd'):
             while True:
-                for i in range(1, 250):
+                for i in list_of_meter_units:
                     request_data(i)
                     sleep(15)
         elif choice in ('7', 'exit', 'e'):
