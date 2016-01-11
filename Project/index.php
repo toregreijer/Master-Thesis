@@ -24,6 +24,13 @@
 		else {
 		  echo nl2br("Opened db successfully!\n\n");
 		}
+
+    	$tablesquery = $db->query("SELECT name FROM sqlite_master WHERE type='table';");
+
+	    while ($table = $tablesquery->fetchArray(SQLITE3_ASSOC)) {
+	        echo $table['name'] . '<br />';
+	    }
+		
 		?>
 	</div>
 	<div class="results">
@@ -36,8 +43,10 @@
 		    <th>Timestamp</th>
 		  </tr>		  
 		  <?php		
-			$results = $db->query('SELECT * FROM house001 WHERE type = "Instantaneous  Volume" AND value != 0 ORDER BY datetime DESC');
-			while ($row = $results->fetchArray()) {
+			$results = $db->query('SELECT * FROM house001 WHERE 
+				type = "Instantaneous  Volume" AND 
+				value != 0 ORDER BY unit_id ASC, datetime DESC');
+			while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
 			    echo "<tr><td>" . $row['unit_id'] . "</td>";
 			    echo "<td>" . $row['value'] . "</td>";
 			    echo "<td>" . $row['unit'] . "</td>";

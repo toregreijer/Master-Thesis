@@ -43,8 +43,7 @@ def request_data(address):
     print('Received: {}'.format(MBus.pretty_hex(mbus_response)))
     if mbus_response:
         mbus_response = MBus.parse_telegram(mbus_response)
-        print(MBus.pretty_print(mbus_response))  # Change to debug only
-
+        print(MBus.pretty_print(mbus_response))  # Change to debug only, create concise & verbose mode
         print('Storing stuff in database...')
         open_and_store(mbus_response)
     else:
@@ -77,9 +76,9 @@ def read_file(file):
 
 if __name__ == '__main__':
     print('Welcome to the Control Unit, please wait a moment!')
-    print('Setting up database...')
-    setup_db()
-    print('Database ready.')
+    # print('Setting up database...')
+    # setup_db()
+    # print('Database ready.')
     nm = NetworkManager(remote_host)
     # nm.open_remote_socket(remote_host, port)
     user_choice = ''

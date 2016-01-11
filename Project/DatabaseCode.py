@@ -16,13 +16,14 @@ def setup_db():
     """ Create a database if one does not exist, as [unit_name, datetime, value]. """
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()
-    c.execute('SELECT name FROM sqlite_master WHERE type=? AND name=?', (t, table1))
+    c.execute('SELECT name FROM sqlite_master WHERE type="table"')
     if c.fetchone():
         print('Found a local database, setting it up for further use...')
     else:
         # Databasens struktur: datetime, ID(sec addr), Manufacturer, type(insta val),
         # medium(water), value(2598), unit(1L)
         print('No database exists, creating a new one...')
+        """
         c.execute('CREATE TABLE {tn} ('
                   '{fn1} DATETIME DEFAULT CURRENT_TIMESTAMP, '
                   '{fn2} TEXT, '
@@ -39,19 +40,57 @@ def setup_db():
                           fn4=field4,
                           fn5=field5,
                           fn6=field6,
-                          fn7=field7))
+                          fn7=field7))  """
         conn.commit()
     conn.close()
+
+# Så putta över create table ovan ner till open'n'store, och skapa en ny tabell som heter unit_id,
+# om en sådan inte finns
 
 
 def open_and_store(m):
     """ Open a connection to the db and store the provided mbus telegram. """
 
+    unit_id = m.fields['id']
+    tables = []
     conn, c = connect()
-    # Databasens struktur: DATETIME, ID(sec_addr), MF, type(instant_val), Medium(water), Value(2598), Unit(1L)
+    c.execute('SELECT name FROM sqlite_master WHERE type="table"')
+    for item in c.fetchall():
+        tables.append(item[0])
+    # print(tables)
+    # print(repr(unit_id))
+    if unit_id in tables:
+        print('Table {} exists, nothing new required.'.format(unit_id))
+    else:
+        print('Table {} does not exist, creating new table.'.format(unit_id))
+        c.execute('CREATE TABLE {tn!r} ('
+                  '{fn1} DATETIME DEFAULT CURRENT_TIMESTAMP, '
+                  '{fn2} TEXT, '
+                  '{fn3} TEXT, '
+                  '{fn4} TEXT, '
+                  '{fn5} TEXT, '
+                  '{fn6} TEXT, '
+                  '{fn7} TEXT  '
+                  ')'
+                  .format(tn=unit_id,
+                          fn1=field1,
+                          fn2=field2,
+                          fn3=field3,
+                          fn4=field4,
+                          fn5=field5,
+                          fn6=field6,
+                          fn7=field7))
+    # Databasens struktur:
+    # DATETIME,
+    # ID(sec_addr),
+    # MF,
+    # type(instant_val),
+    # Medium(water),
+    # Value(2598),
+    # Unit(1L)
     # En post per datablock i telegrammet!
     for b in m.data_blocks:
-        c.execute('INSERT INTO {tn} ('  # Insert into table 'house1'
+        c.execute('INSERT INTO {tn!r} ('  # Insert into table 'unit_id'
                   # '{fn1}, '  # datetime -- UNNECESSARY, GETS DEFAULT VALUE
                   '{fn2}, '  # unit_id
                   '{fn3}, '  # manufacturer
@@ -60,7 +99,7 @@ def open_and_store(m):
                   '{fn6}, '  # value
                   '{fn7}) '  # unit
                   'VALUES (?, ?, ?, ?, ?, ?)'
-                  .format(tn=table1,
+                  .format(tn=unit_id,
                           fn2=field2,
                           fn3=field3,
                           fn4=field4,
