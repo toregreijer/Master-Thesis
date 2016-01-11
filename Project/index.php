@@ -24,13 +24,6 @@
 		else {
 		  echo nl2br("Opened db successfully!\n\n");
 		}
-
-    	$tablesquery = $db->query("SELECT name FROM sqlite_master WHERE type='table';");
-
-	    while ($table = $tablesquery->fetchArray(SQLITE3_ASSOC)) {
-	        echo $table['name'] . '<br />';
-	    }
-		
 		?>
 	</div>
 	<div class="results">
@@ -42,17 +35,21 @@
 		    <th>Type</th>
 		    <th>Timestamp</th>
 		  </tr>		  
-		  <?php		
-			$results = $db->query('SELECT * FROM house001 WHERE 
-				type = "Instantaneous  Volume" AND 
-				value != 0 ORDER BY unit_id ASC, datetime DESC');
-			while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
-			    echo "<tr><td>" . $row['unit_id'] . "</td>";
-			    echo "<td>" . $row['value'] . "</td>";
-			    echo "<td>" . $row['unit'] . "</td>";
-			    echo "<td>" . $row['type'] . "</td>";
-			    echo "<td>" . $row['datetime'] . "</td></tr>";
-			    //echo nl2br(/*"Type = ". $row['type'] . */"\n\n");
+		  <?php
+	    	$tablesquery = $db->query("SELECT name FROM sqlite_master WHERE type='table';");
+		    while ($table = $tablesquery->fetchArray(SQLITE3_ASSOC)) {
+		        // echo $table['name'] . '<br />';
+			    $sql = "SELECT * FROM '".$table['name']."' WHERE type = 'Instantaneous  Volume'
+			    ORDER BY unit_id ASC, datetime DESC LIMIT 1";
+				$results = $db->query($sql);
+				while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
+				    echo "<tr><td>" . $row['unit_id'] . "</td>";
+				    echo "<td>" . $row['value'] . "</td>";
+				    echo "<td>" . $row['unit'] . "</td>";
+				    echo "<td>" . $row['type'] . "</td>";
+				    echo "<td>" . $row['datetime'] . "</td></tr>";
+				    //echo nl2br(/*"Type = ". $row['type'] . "\n\n");
+				}
 			}
 			?>
 		</table>
