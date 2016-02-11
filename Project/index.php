@@ -11,7 +11,7 @@
 		<h1>Logo</h1>
 	</div>
 	<div class="menu">
-		<h2>Menu Menu Menu</h2>
+		<h1>Menu</h1>
 	</div>
 </div>
 <div class="main">
@@ -22,7 +22,7 @@
 		  echo $db->lastErrorMsg();
 		}
 		else {
-		  echo nl2br("Opened db successfully!\n\n");
+		  //echo nl2br("Opened db successfully!\n\n");
 		}
 		?>
 	</div>
@@ -31,9 +31,9 @@
 		  <tr>
 		    <th>ID</th>
 		    <th>Latest Value</th> 
-		    <th>Unit</th>
 		    <th>Type</th>
 		    <th>Timestamp</th>
+		    <!-- <th>Timestamp</th> -->
 		  </tr>		  
 		  <?php
 	    	$tablesquery = $db->query("SELECT name FROM sqlite_master WHERE type='table';");
@@ -44,8 +44,8 @@
 				$results = $db->query($sql);
 				while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
 				    echo "<tr><td>" . $row['unit_id'] . "</td>";
-				    echo "<td>" . $row['value'] . "</td>";
-				    echo "<td>" . $row['unit'] . "</td>";
+				    echo "<td>" . $row['value'] . " " . $row['unit'] . "</td>";
+				    // echo "<td>" . $row['unit'] . "</td>";
 				    echo "<td>" . $row['type'] . "</td>";
 				    echo "<td>" . $row['datetime'] . "</td></tr>";
 				    //echo nl2br(/*"Type = ". $row['type'] . "\n\n");

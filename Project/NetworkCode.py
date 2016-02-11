@@ -4,14 +4,21 @@ import select
 
 class NetworkManager(object):
     port = 300
+    mbus_master_address = '192.168.1.41'
     local_host = ''
     remote_host = ''
     server_socket = socket
     remote_socket = socket
 
-    def __init__(self, target_host='127.0.0.1'):
-        self.localhost = socket.gethostname()
-        self.remote_host = target_host
+    def __init__(self):
+        self.local_host = socket.gethostname()
+        self.remote_host = self.mbus_master_address
+
+    def switch_remote_host(self):
+        if self.remote_host == 'localhost':
+            self.remote_host = self.mbus_master_address
+        else:
+            self.remote_host = 'localhost'
 
     def send(self, data):
         try:

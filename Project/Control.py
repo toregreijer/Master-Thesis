@@ -3,9 +3,10 @@ from DatabaseCode import open_and_store, setup_db
 from time import sleep
 import MBus
 import csv
+import logging
 
 
-remote_host = '192.168.1.41'
+#remote_host = '192.168.1.41'
 list_of_meter_units = []
 alive = 1
 
@@ -75,21 +76,19 @@ def read_file(file):
     return res
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     print('Welcome to the Control Unit, please wait a moment!')
-    # print('Setting up database...')
-    # setup_db()
-    # print('Database ready.')
-    nm = NetworkManager(remote_host)
-    # nm.open_remote_socket(remote_host, port)
+    logging.info("Creating network manager...")
+    nm = NetworkManager()
+    logging.info("Starting main loop")
     user_choice = ''
-    # print('Connection established.')
     while alive:
         choice = input('Please select option:\n'
                        '1. Scan MBus for units.\n'
                        '2. Request data from one unit.\n'
                        '3. Ping one unit.\n'
                        '4. Get addresses from file.\n'
-                       '5. Custom telegram\n'
+                       '5. Switch between sim/live\n'
                        '6. Collect data\n'
                        '7. Exit\n'
                        ': ')
@@ -105,9 +104,8 @@ if __name__ == '__main__':
             target = 'list_of_devices.csv'  # input('Which file? ')
             list_of_meter_units = read_file(target)
             print(list_of_meter_units)
-        elif choice in ('5', 'custom', 'c'):
-            txt = input(': ')
-            print(send_custom(txt))
+        elif choice in ('5', 'z'):
+            nm.switch_remote_host()
         elif choice in ('6', 'data', 'd'):
             while True:
                 for i in list_of_meter_units:
