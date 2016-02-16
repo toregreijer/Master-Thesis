@@ -90,7 +90,7 @@ if __name__ == '__main__':
                        '3. Ping one unit.\n'
                        '4. Get addresses from file.\n'
                        '5. Switch between sim/live\n'
-                       '6. Collect data\n'
+                       '6. Collect data from 1 to 101\n'
                        '7. Exit\n'
                        ': ')
         if choice in ('1', 'scan', 's'):
@@ -110,9 +110,9 @@ if __name__ == '__main__':
             logging.debug("Remote host is " + nm.remote_host)
         elif choice in ('6', 'data', 'd'):
             while True:
-                for i in list_of_meter_units:
+                for i in range(1, 101):
                     request_data(i)
-                    sleep(15)
+                    sleep(11)
         elif choice in ('7', 'exit', 'e'):
             break
     print('Exiting, goodbye!')
