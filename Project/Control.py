@@ -5,8 +5,7 @@ import MBus
 import csv
 import logging
 
-
-#remote_host = '192.168.1.41'
+# remote_host = '192.168.1.41'
 list_of_meter_units = []
 alive = 1
 
@@ -78,9 +77,11 @@ def read_file(file):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     print('Welcome to the Control Unit, please wait a moment!')
-    logging.info("Creating network manager...")
+    logging.debug("Logging level is " + logging.getLevelName(logging.getLogger().getEffectiveLevel()))
+    # logging.info("Starting Network Manager...")
     nm = NetworkManager()
-    logging.info("Starting main loop")
+    logging.debug("Remote host is " + nm.remote_host)
+    # logging.info("Starting main loop...")
     user_choice = ''
     while alive:
         choice = input('Please select option:\n'
@@ -106,6 +107,7 @@ if __name__ == '__main__':
             print(list_of_meter_units)
         elif choice in ('5', 'z'):
             nm.switch_remote_host()
+            logging.debug("Remote host is " + nm.remote_host)
         elif choice in ('6', 'data', 'd'):
             while True:
                 for i in list_of_meter_units:

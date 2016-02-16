@@ -31,23 +31,26 @@
 		  <tr>
 		    <th>ID</th>
 		    <th>Latest Value</th> 
-		    <th>Type</th>
+		    <th>Unit</th>
+		    <th>Description</th>
+		    <th>Function</th>
 		    <th>Timestamp</th>
-		    <!-- <th>Timestamp</th> -->
-		  </tr>		  
+		  </tr>
 		  <?php
 	    	$tablesquery = $db->query("SELECT name FROM sqlite_master WHERE type='table';");
 		    while ($table = $tablesquery->fetchArray(SQLITE3_ASSOC)) {
 		        // echo $table['name'] . '<br />';
-			    $sql = "SELECT * FROM '".$table['name']."' WHERE type = 'Instantaneous  Volume'
-			    ORDER BY unit_id ASC, datetime DESC LIMIT 1";
+			    $sql = "SELECT * FROM '".$table['name']."' ORDER BY unit_id ASC, datetime DESC";
 				$results = $db->query($sql);
 				while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
-				    echo "<tr><td>" . $row['unit_id'] . "</td>";
-				    echo "<td>" . $row['value'] . " " . $row['unit'] . "</td>";
-				    // echo "<td>" . $row['unit'] . "</td>";
-				    echo "<td>" . $row['type'] . "</td>";
-				    echo "<td>" . $row['datetime'] . "</td></tr>";
+				    echo "<tr>";
+                    echo "<td>" . $row['unit_id'] . "</td>";
+				    echo "<td>" . $row['value'] . "</td>";
+				    echo "<td>" . $row['unit'] . "</td>";
+				    echo "<td>" . $row['description'] . "</td>";
+				    echo "<td>" . $row['function'] . "</td>";
+				    echo "<td>" . $row['datetime'] . "</td>";
+				    echo "</tr>";
 				    //echo nl2br(/*"Type = ". $row['type'] . "\n\n");
 				}
 			}

@@ -5,20 +5,19 @@ import select
 class NetworkManager(object):
     port = 300
     mbus_master_address = '192.168.1.41'
-    local_host = ''
+    local_host = '127.0.0.1'
     remote_host = ''
     server_socket = socket
     remote_socket = socket
 
     def __init__(self):
-        self.local_host = socket.gethostname()
         self.remote_host = self.mbus_master_address
 
     def switch_remote_host(self):
-        if self.remote_host == 'localhost':
+        if self.remote_host == self.local_host:
             self.remote_host = self.mbus_master_address
         else:
-            self.remote_host = 'localhost'
+            self.remote_host = self.local_host
 
     def send(self, data):
         try:
@@ -70,17 +69,13 @@ class NetworkManager(object):
         try:
             self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.remote_socket.connect((self.remote_host, self.port))
-            # print('Opening, L={} R={}'.format(self.remote_socket.getsockname(), self.remote_socket.getpeername()))
         except socket.timeout:
             print('Timeout error opening remote socket!')
-            # exit(1)
         except socket.error:
             print('General error opening remote socket! Check NetworkCode!')
-            # exit(1)
 
     def close_remote_socket(self):
         try:
-            # print('Closing, L={} R={}'.format(self.remote_socket.getsockname(), self.remote_socket.getpeername()))
             self.remote_socket.shutdown(socket.SHUT_RDWR)
             self.remote_socket.close()
         except socket.error:

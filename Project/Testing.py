@@ -13,7 +13,7 @@ manual = b'\x10\x40' + bytes_from_hex + b'\x01'  # b'\x10@\x0c\x...
 readable = ':'.join('{:02X}'.format(x) for x in manual)     # 10:40:0C:86:80:95:49
 list_of_hexes = [hex(h) for h in list(manual)]  # ['0x10', '0x40', '0xc', '0x86', '0x80', '0x95', '0x49']
 XX_list = [format(x, '02X') for x in manual]    # ['10', '40', '0C', '86', '80', '95', '49']
-# print('bytes_from_hex: {0}  -  type: {1}'.format(bytes_from_hex, type(bytes_from_hex)))
+print('bytes_from_hex: {0}  -  type: {1}'.format(bytes_from_hex, type(bytes_from_hex)))
 # print('manual: {0}  -  type: {1}'.format(manual, type(manual)))
 # print('readable: {0}  -  type: {1}'.format(readable, type(readable)))
 # print('list_of_hexes: {0}  -  type: {1}'.format(list_of_hexes, type(list_of_hexes)))
