@@ -1,3 +1,4 @@
+import re
 from random import randint
 from MBusExtensions import decode_vif, decode_vife, decode_vife_a, decode_vife_b
 
@@ -179,6 +180,18 @@ def decode_dife(dife):
     return extension_bit, subunit, tariff, storage_bits
 
 
+def combine_value_and_unit(value, unit):
+    # Check to see if a conversion is needed
+    # If so, split the prefix and suffix,
+    # returning the value multiplied with the prefix, and the suffix
+    if unit and unit[0].isdigit():
+        prefix = re.split(r'([a-zA-Z]+)', unit)[0]
+        unit = unit.replace(prefix, '')
+        return value*float(prefix), unit
+    else:
+        return value, unit
+
+
 def pretty_data_block(data_block):
     """ Return a readable string representing a block of data """
     return '\nCoding: {0[0]}\n' \
@@ -313,6 +326,7 @@ class MBusTelegram:
                     if description.startswith('EXT_B'):
                         vife = user_data_list.pop(0)
                         ext_v, description, unit = decode_vife_b(vife)
+                    # TODO: Handle Manufacturer specific coding, plain ascii, and other weird stuff
                     while ext_v:
                         vife = user_data_list.pop(0)
                         ext_v, description, unit = decode_vife(vife)
@@ -327,6 +341,7 @@ class MBusTelegram:
                             value = int(data_data)
                         else:
                             value = int(data_data, 16)
+                    # value, unit = combine_value_and_unit(value, unit)
                     # TODO: Subunit, tariff, and storage is only interesting if there was a DIFE, so they aren't 0 0 0.
                     user_data_block = [coding, func, description, value, unit,
                                        final_subunit, final_tariff, final_storage]
@@ -335,7 +350,6 @@ class MBusTelegram:
 
         assert self.type in TELEGRAM_TYPE
         assert self.format in TELEGRAM_FORMAT
-        # TODO: Assert self.CS == calculate_new_CS(raw) ..typ?
 
     def __str__(self):
         return ':'.join(self.hex_list)

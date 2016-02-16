@@ -1,14 +1,14 @@
 import sqlite3
 
 sqlite_file = 'the_great_db.sqlite'
-table1 = 'house001'
 field1 = 'datetime'
 field2 = 'unit_id'
-field3 = 'manufacturer'
-field4 = 'type'
+field3 = 'function'
+field4 = 'description'
 field5 = 'medium'
 field6 = 'value'
 field7 = 'unit'
+field8 = 'manufacturer'
 t = 'table'
 
 
@@ -44,21 +44,15 @@ def setup_db():
         conn.commit()
     conn.close()
 
-# Så putta över create table ovan ner till open'n'store, och skapa en ny tabell som heter unit_id,
-# om en sådan inte finns
-
 
 def open_and_store(m):
     """ Open a connection to the db and store the provided mbus telegram. """
-
     unit_id = m.fields['id']
     tables = []
     conn, c = connect()
     c.execute('SELECT name FROM sqlite_master WHERE type="table"')
     for item in c.fetchall():
         tables.append(item[0])
-    # print(tables)
-    # print(repr(unit_id))
     if unit_id in tables:
         print('Table {} exists, nothing new required.'.format(unit_id))
     else:
@@ -70,7 +64,8 @@ def open_and_store(m):
                   '{fn4} TEXT, '
                   '{fn5} TEXT, '
                   '{fn6} TEXT, '
-                  '{fn7} TEXT  '
+                  '{fn7} TEXT, '
+                  '{fn8} TEXT  '
                   ')'
                   .format(tn=unit_id,
                           fn1=field1,
@@ -79,41 +74,45 @@ def open_and_store(m):
                           fn4=field4,
                           fn5=field5,
                           fn6=field6,
-                          fn7=field7))
+                          fn7=field7,
+                          fn8=field8))
     # Databasens struktur:
-    # DATETIME,
-    # ID(sec_addr),
-    # MF,
-    # type(instant_val),
-    # Medium(water),
-    # Value(2598),
-    # Unit(1L)
+    # field1 = 'datetime'
+    # field2 = 'unit_id'
+    # field3 = 'function'
+    # field4 = 'description'
+    # field5 = 'medium'
+    # field6 = 'value'
+    # field7 = 'unit'
+    # field8 = 'manufacturer'
     # En post per datablock i telegrammet!
     for b in m.data_blocks:
         c.execute('INSERT INTO {tn!r} ('  # Insert into table 'unit_id'
-                  # '{fn1}, '  # datetime -- UNNECESSARY, GETS DEFAULT VALUE
-                  '{fn2}, '  # unit_id
-                  '{fn3}, '  # manufacturer
-                  '{fn4}, '  # type
-                  '{fn5}, '  # medium
-                  '{fn6}, '  # value
-                  '{fn7}) '  # unit
-                  'VALUES (?, ?, ?, ?, ?, ?)'
+                  '{fn2}, '
+                  '{fn3}, '
+                  '{fn4}, '
+                  '{fn5}, '
+                  '{fn6}, '
+                  '{fn7}, '
+                  '{fn8}) '
+                  'VALUES (?, ?, ?, ?, ?, ?, ?)'
                   .format(tn=unit_id,
                           fn2=field2,
                           fn3=field3,
                           fn4=field4,
                           fn5=field5,
                           fn6=field6,
-                          fn7=field7
+                          fn7=field7,
+                          fn8=field8
                           ),
                   (
                       m.fields['id'],       # Unit ID
-                      m.fields['mf'],       # Manufacturer
-                      b[1]+' '+b[2],        # Type, e.g. "Instantaneous value"
+                      b[1],                 # Function
+                      b[2],                 # Description
                       m.fields['medium'],   # Medium
                       b[3],                 # Value
                       b[4],                 # Unit
+                      m.fields['mf'],       # Manufacturer
                   ))
     close(conn)
 
