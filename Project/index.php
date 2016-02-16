@@ -40,7 +40,7 @@
 	    	$tablesquery = $db->query("SELECT name FROM sqlite_master WHERE type='table';");
 		    while ($table = $tablesquery->fetchArray(SQLITE3_ASSOC)) {
 		        // echo $table['name'] . '<br />';
-			    $sql = "SELECT * FROM '".$table['name']."' ORDER BY unit_id ASC, datetime DESC";
+			    $sql = "SELECT * FROM '".$table['name']."' ORDER BY unit_id ASC, datetime DESC LIMIT 1";
 				$results = $db->query($sql);
 				while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
 				    echo "<tr>";

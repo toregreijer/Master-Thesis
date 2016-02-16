@@ -11,7 +11,7 @@ class NetworkManager(object):
     remote_socket = socket
 
     def __init__(self):
-        self.remote_host = self.mbus_master_address
+        self.remote_host = self.local_host
 
     def switch_remote_host(self):
         if self.remote_host == self.local_host:

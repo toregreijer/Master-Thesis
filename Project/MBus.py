@@ -184,12 +184,12 @@ def combine_value_and_unit(value, unit):
     # Check to see if a conversion is needed
     # If so, split the prefix and suffix,
     # returning the value multiplied with the prefix, and the suffix
-    if unit and unit[0].isdigit():
-        prefix = re.split(r'([a-zA-Z]+)', unit)[0]
-        unit = unit.replace(prefix, '')
-        return value*float(prefix), unit
-    else:
-        return value, unit
+    if unit:
+        if unit[0].isdigit():
+            prefix = re.split(r'([a-zA-Z]+)', unit)[0]
+            unit = unit.replace(prefix, '')
+            return int(value*float(prefix)), unit
+    return value, unit
 
 
 def pretty_data_block(data_block):
@@ -341,7 +341,7 @@ class MBusTelegram:
                             value = int(data_data)
                         else:
                             value = int(data_data, 16)
-                    # value, unit = combine_value_and_unit(value, unit)
+                    value, unit = combine_value_and_unit(value, unit)
                     # TODO: Subunit, tariff, and storage is only interesting if there was a DIFE, so they aren't 0 0 0.
                     user_data_block = [coding, func, description, value, unit,
                                        final_subunit, final_tariff, final_storage]

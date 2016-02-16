@@ -83,7 +83,7 @@ if __name__ == '__main__':
                     client_socket.sendall(MBus.ACK)
                 elif mbt.type == 'REQ_UD2':
                     if 0 <= int(mbt.fields['address'], 16) < len(meter_units):
-
+                        '''
                         response = bytes.fromhex(' '.join('68:15:15:68:08:33:72:'
                                                           '54:42:00:13:B4:09:01:07:E9:28:00:00:'
                                                           '0C:13:98:25:00:00:08:16'.split(':')))
@@ -100,7 +100,7 @@ if __name__ == '__main__':
                                   '01:13:41:01:00:00:84:01:06:00:00:00:00:84:11:06:00:00:00:00:84:21:06:00:00:00:00:'
                                   '84:31:06:00:00:00:00:84:41:14:00:00:00:00:84:81:40:14:00:00:00:00:'
                                   '74:16'.split(':')))
-                        '''
+                        # '''
                         # response = MBus.rsp_ud(mbt.A, meter_units[mbt.A].get_value())
                         # mbt_r = MBus.MBusTelegram(response)
                         # print('Responded with value {} [{}]'.format(

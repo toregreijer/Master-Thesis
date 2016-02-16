@@ -36,15 +36,15 @@ print('bytes_from_hex: {0}  -  type: {1}'.format(bytes_from_hex, type(bytes_from
 # '13:B4:09:01:07:97:28:00:00:0C:13:91:29:00:00:B3:16'.split(':'))))
 # print(MBus.pretty_print(foo))
 # 68:15:15:68:08:33:72:54:42:00:13:B4:09:01:07:97:28:00:00:0C:13:91:29:00:00:B3:16
-"""
+
 unit = "0.01Wh"
 print(unit)
 print(unit[0].isdigit())
 prefix = re.split(r'([a-zA-Z]+)', unit)[0]
 unit = unit.replace(prefix, '')
-print(prefix)
-print(unit)
-
+print("prefix >{}<".format(prefix))
+print("unit >{}<".format(unit))
+"""
 def read_file(file):
     res = []
     with open(file, newline='') as csvfile:
