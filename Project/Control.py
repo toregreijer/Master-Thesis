@@ -1,5 +1,5 @@
 from NetworkCode import NetworkManager
-from DatabaseCode import open_and_store, setup_db
+from DatabaseCode import open_and_store
 from time import sleep
 import MBus
 import csv
@@ -12,8 +12,8 @@ alive = 1
 def scan():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
-    for x in range(0, 250):
-        sleep(1)
+    for x in range(1, 250):
+        sleep(10)
         if ping(x):
             list_of_addresses.append(x)
             print('Discovered unit at address {}!'.format(x))
@@ -42,7 +42,7 @@ def request_data(address):
     print('Received: {}'.format(MBus.pretty_hex(mbus_response)))
     if mbus_response:
         mbus_response = MBus.parse_telegram(mbus_response)
-        print(MBus.pretty_print(mbus_response))  # Change to debug only, create concise & verbose mode
+        logging.debug(MBus.pretty_print(mbus_response))
         print('Storing stuff in database...')
         open_and_store(mbus_response)
     else:
