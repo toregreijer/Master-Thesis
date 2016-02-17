@@ -43,13 +43,16 @@
 			    $sql = "SELECT * FROM '".$table['name']."' ORDER BY unit_id ASC, datetime DESC LIMIT 1";
 				$results = $db->query($sql);
 				while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
+				    // Some handling of the datetime, since sqlite stores it in UTC.
+				    $time = strtotime($row['datetime'].' UTC');
+				    $localtime = date('Y-m-d H:i:s', $time);
 				    echo "<tr>";
                     echo "<td>" . $row['unit_id'] . "</td>";
 				    echo "<td>" . $row['value'] . "</td>";
 				    echo "<td>" . $row['unit'] . "</td>";
 				    echo "<td>" . $row['description'] . "</td>";
 				    echo "<td>" . $row['function'] . "</td>";
-				    echo "<td>" . $row['datetime'] . "</td>";
+				    echo "<td>" . $localtime . "</td>";
 				    echo "</tr>";
 				    //echo nl2br(/*"Type = ". $row['type'] . "\n\n");
 				}
