@@ -5,7 +5,6 @@ import MBus
 import csv
 import logging
 
-# remote_host = '192.168.1.41'
 list_of_meter_units = []
 alive = 1
 
@@ -75,13 +74,12 @@ def read_file(file):
     return res
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     print('Welcome to the Control Unit, please wait a moment!')
-    logging.debug("Logging level is " + logging.getLevelName(logging.getLogger().getEffectiveLevel()))
-    # logging.info("Starting Network Manager...")
+    logging.info("Logging level is " +
+                 logging.getLevelName(logging.getLogger().getEffectiveLevel()))
     nm = NetworkManager()
-    logging.debug("Remote host is " + nm.remote_host)
-    # logging.info("Starting main loop...")
+    logging.info("Remote host is " + nm.remote_host)
     user_choice = ''
     while alive:
         choice = input('Please select option:\n'
@@ -91,7 +89,8 @@ if __name__ == '__main__':
                        '4. Get addresses from file.\n'
                        '5. Switch between sim/live\n'
                        '6. Collect data from 1 to 101\n'
-                       '7. Exit\n'
+                       '7. Set debugging level\n'
+                       '8. Exit\n'
                        ': ')
         if choice in ('1', 'scan', 's'):
             list_of_meter_units = scan()
@@ -102,18 +101,27 @@ if __name__ == '__main__':
             target = int(input('Which unit? '))
             print(ping(target))
         elif choice in ('4', 'get', 'g'):
-            target = 'list_of_devices.csv'  # input('Which file? ')
+            target = 'list_of_devices.csv'
             list_of_meter_units = read_file(target)
             print(list_of_meter_units)
         elif choice in ('5', 'z'):
             nm.switch_remote_host()
-            logging.debug("Remote host is " + nm.remote_host)
+            print("Remote host is now " + nm.remote_host)
         elif choice in ('6', 'data', 'd'):
             while True:
                 for i in range(1, 101):
                     request_data(i)
                     sleep(11)
-        elif choice in ('7', 'exit', 'e'):
+        elif choice in ('7', 'b'):
+            level = 10 * int(input('1: Debug\n'
+                                   '2: Info\n'
+                                   '3: Warning\n'
+                                   '4: Error\n'
+                                   '5: Critical\n'))
+            logging.getLogger().setLevel(logging.getLevelName(level))
+            logging.info("Logging level is " +
+                         logging.getLevelName(logging.getLogger().getEffectiveLevel()))
+        elif choice in ('8', 'exit', 'e'):
             break
     print('Exiting, goodbye!')
     exit(0)

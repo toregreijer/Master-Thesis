@@ -1,5 +1,6 @@
 import socket
 import select
+import logging
 
 
 class NetworkManager(object):
@@ -12,6 +13,15 @@ class NetworkManager(object):
 
     def __init__(self):
         self.remote_host = self.local_host
+        logging.debug('NetworkManager up and running.')
+
+    def set_port(self, p):
+        self.port = p
+        logging.info('New port set to {}'.format(p))
+
+    def set_mbus_master(self, host):
+        self.mbus_master_address = host
+        logging.info('New MBus master set to {}'.format(host))
 
     def switch_remote_host(self):
         if self.remote_host == self.local_host:
@@ -33,10 +43,10 @@ class NetworkManager(object):
             self.close_remote_socket()
             return tmp
         except socket.timeout:
-            print('Timeout error')
+            logging.error('send() : Timeout error.')
             return
         except socket.error:
-            print('SOCKET ERROR!')
+            logging.error('send() : Socket error.')
             return
 
     def accept_connection(self):
@@ -45,7 +55,7 @@ class NetworkManager(object):
         if not r:
             return 0, 0
         else:
-            # print('Accepting connections now!')
+            logging.debug('Accepting connections now!')
             (client_socket, addr) = s.accept()
             client_socket.setblocking(1)
             return client_socket, addr
@@ -56,13 +66,12 @@ class NetworkManager(object):
             self.server_socket.bind((self.local_host, self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)
-            # print('Opened: {}'.format(self.server_socket))
         except socket.error:
-            print('General error opening server socket! Check NetworkCode!')
+            logging.error('General error opening server socket! Check NetworkCode!')
             exit(1)
 
     def close_server_socket(self):
-        # print('Closing: {}'.format(self.server_socket))
+        logging.debug('Closing: {}'.format(self.server_socket))
         self.server_socket.close()
 
     def open_remote_socket(self):
@@ -70,13 +79,13 @@ class NetworkManager(object):
             self.remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.remote_socket.connect((self.remote_host, self.port))
         except socket.timeout:
-            print('Timeout error opening remote socket!')
+            logging.error('Timeout error opening remote socket!')
         except socket.error:
-            print('General error opening remote socket! Check NetworkCode!')
+            logging.error('General error opening remote socket! Check NetworkCode!')
 
     def close_remote_socket(self):
         try:
             self.remote_socket.shutdown(socket.SHUT_RDWR)
             self.remote_socket.close()
         except socket.error:
-            print('General error closing remote socket! Check NetworkCode!')
+            logging.error('General error closing remote socket! Check NetworkCode!')
