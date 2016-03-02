@@ -11,7 +11,8 @@
 		<h1>Logo</h1>
 	</div>
 	<div class="menu">
-		<h1>Menu</h1>
+		<h1><a href="index.php">Home</a>
+			<a href="settings.html">Settings</a></h1>
 	</div>
 </div>
 <div class="main">

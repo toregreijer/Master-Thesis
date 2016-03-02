@@ -7,36 +7,6 @@ TELEGRAM_SIZE = 5
 TELEGRAM_FORMAT = ['SINGLE', 'SHORT', 'LONG']
 TELEGRAM_TYPE = ['ACK', 'SND_NKE', 'SND_UD', 'REQ_UD2', 'RSP_UD']
 ACK = b'\xE5'
-data_params = (b'\x42\x00\x00\x00'           # UNIT ID NUMBER
-               b'\x42\x42'                   # MANUFACTURERS MARK
-               b'\x04'                       # VERSION NUMBER OF MBUS INTERFACE FW
-               b'\x02'                       # MEDIUM: ELECTRICITY
-               b'\x00'                       # ACCESS NUMBER: 00->FF->00
-               b'\x00'                       # MBUS INTERFACE STATUS
-               b'\x00\x00'                   # SIGNATURE, NOT USED, ALWAYS 0000
-               b'\x86\x00\x82\xFF\x80\xFF'   # READOUT DATA PARAMETRISED
-               b'\x00')
-
-# SND_NKE = b'\x10\x40\x00\x40\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
-# REQ_UD2 = b'\x10\x5B\x00\x5B\x16'       # START:CONTROL:ADDRESS:CHECKSUM:STOP
-
-RSP_UD = (b'\x68\x1D\x1D\x68'           # START:LENGTH:LENGTH:START
-          b'\x08\x01\x72'               # CONTROL:ADDRESS:CONTROL_INFO
-          b'\x42\x00\x00\x00'           # UNIT ID NUMBER
-          b'\x42\x42'                   # MANUFACTURERS MARK
-          b'\x04'                       # VERSION NUMBER OF MBUS INTERFACE FW
-          b'\x02'                       # MEDIUM: ELECTRICITY
-          b'\x00'                       # ACCESS NUMBER: 00->FF->00
-          b'\x00'                       # MBUS INTERFACE STATUS
-
-          b'\x00\x00'                   # SIGNATURE, NOT USED, ALWAYS 0000
-          b'\x86\x00\x82\xFF\x80\xFF'   # READOUT DATA PARAMETRISED
-          b'\x00'                       # PHASE SOMETHING
-
-          b'\x45\x00\x00\x00\x00\x00'   # VALUE
-          b'\x0F'                       # DIF: 0F = no more data; 1F = other data to send
-          b'\xCC'                       # CHECKSUM
-          b'\x16')                      # STOP CHARACTER
 
 
 def parse_telegram(t):
@@ -46,64 +16,15 @@ def parse_telegram(t):
         return
 
 
-def snd_nke(a):
-    if a <= 250:
-        hex_addr = b(a)
-        hex_checksum = b(0x40+a)
-        return b'\x10\x40' + hex_addr + hex_checksum + b'\x16'
-    else:
-        addr = bytes.fromhex(rev(str(a)))
-        cs = bytes.fromhex(hex(0x59E + sum(addr))[-2:])
-        while len(addr) < 4:
-            addr += b'\x00'
-        return b'\x68\x0B\x0B\x68\x53\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
-
-
-def req_ud2(a):
-    # TODO: Add functionality to handle both primary and secondary addresses
-    if a > 250:
-        return b'\x10\x7B\xFD\x78\x16'
-    else:
-        hex_addr = b(a)
-        hex_checksum = b(0x7B+a)
-        return b'\x10\x7B' + hex_addr + hex_checksum + b'\x16'
-    # else:
-        # addr = bytes.fromhex(rev(str(a)))
-        # cs = bytes.fromhex(hex(0x5A6 + sum(addr))[-2:])
-        # while len(addr) < 4:
-        #     addr += b'\x00'
-        # return b'\x68\x0B\x0B\x68\x5B\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
-
-
-def rsp_ud(a, value):
-    start = 0x68                        # int
-    stop = 0x16                         # int
-    control = 0x08                      # int
-    dif = 0x0F                          # int
-    ci = 0x72                           # int
-    address = a                         # int
-    data = bytes.fromhex(rev(format(value, '02X')))    # low order first
-    first_rnd_block = b''                  # bytes
-    for i in range(20):
-        first_rnd_block += b(randint(0, 100))
-    length = len(data + data_params)+4
-
-    checksum = bytes.fromhex(hex(control + address + ci + dif + sum(data_params) + sum(data))[-2:])
-
-    telegram = b(start) + b(length) + b(length) + b(start) + \
-        b(control) + b(address) + b(ci) + data_params + data + \
-        b(dif) + checksum + b(stop)
-
-    return telegram
-
-
 def b(x):
-    """ Take an integer value and return the hexadecimal representation in bytes """
+    """ Take an integer value and return the 2 last digits of the hexadecimal representation in bytes
+     :param x: integer value to convert """
     return bytes.fromhex(format(x, '02X')[-2:])
 
 
 def rev(h):
-    """ Take a string with hex values and change low- to high-order. """
+    """ Take a string with hex values and change low- to high-order.
+     :param h: ... """
     original = h
     result = ''
     if len(h) % 2 != 0:
@@ -111,9 +32,55 @@ def rev(h):
     for i in range(len(original)//2):
         result = original[:2] + result
         original = original[2:]
-    # while len(result) < 12:
-    #    result += '00'
     return result
+
+
+def random_byte(max_value=200):
+    return b(randint(1, max_value))
+
+
+def snd_nke(a):
+    if a <= 250:
+        addr = b(a)
+        cs = b(0x40 + a)
+        return b'\x10\x40' + addr + cs + b'\x16'
+    else:
+        addr = bytes.fromhex(rev(str(a)))
+        cs = b(0x59E + sum(addr))
+        while len(addr) < 4:
+            addr += b'\x00'
+        return b'\x68\x0B\x0B\x68\x53\xFD\x52' + addr + b'\xFF\xFF\xFF\xFF' + cs + b'\x16'
+
+
+def req_ud2(a):
+    if a > 250:
+        return b'\x10\x7B\xFD\x78\x16'
+    else:
+        hex_addr = b(a)
+        hex_checksum = b(0x7B+a)
+        return b'\x10\x7B' + hex_addr + hex_checksum + b'\x16'
+
+
+def rsp_ud():
+    """
+    VARIABLE DATA BLOCK
+    BITS!
+    DIF = 04 = 0000 0100 = not ext, LSB of storage is 0, function is instantaneous value, data is 32bit int.
+    VIB = no ext, then 7 random bits, from 000 0000 to 0110 1011 (int 107)
+    DATA = 32bit int = 4 random bytes
+    """
+    address = random_byte()
+    unit_id = random_byte(153) + random_byte(153) + random_byte(153) + random_byte(153)
+    manufacturer = random_byte() + random_byte()
+    medium = random_byte(10)
+    data = random_byte() + random_byte() + random_byte() + random_byte()
+    vib = random_byte(107)
+    cs = b(sum(b'\x08' + address + b'\x72' + unit_id + manufacturer + b'\x01' +
+               medium + b'\x01\x00\x00\x00' + b'\x04' + vib + data))
+
+    return b'\x68\x15\x15\x68\x08' + address + b'\x72' + \
+           unit_id + manufacturer + b'\x01' + medium + b'\x01\x00\x00\x00' + \
+           b'\x04' + vib + data + cs + b'\x16'
 
 
 def decode_mf(b1, b2):
@@ -151,7 +118,7 @@ def decode_dif(dif):
     lsb_of_storage = (dif & 0x40) >> 6
     # The function field gives the type of data as follows.
     function_field = (dif & 0x30) >> 4
-    function_codes = ['Instantaneous ', 'Maximum ', 'Minimum ', 'Value during error state']
+    function_codes = ['Instantaneous value', 'Maximum value', 'Minimum value', 'Value during error state']
     # The data field shows how the data from the master must be interpreted in respect of length
     # and coding. The following table contains the possible coding of the data field:
     data_field = (dif & 0x0F)
@@ -193,9 +160,11 @@ def combine_value_and_unit(value, unit):
 
 
 def pretty_data_block(data_block):
-    """ Return a readable string representing a block of data """
+    """ Return a readable string representing a block of data
+     :param data_block: ... """
     return '\nCoding: {0[0]}\n' \
-           'Type: {0[1]}{0[2]}\n' \
+           'Function: {0[1]}\n' \
+           'Description: {0[2]}\n' \
            'Value: {0[3]} {0[4]}\n' \
            'Subunit: {0[5]}\n' \
            'Tariff: {0[6]}\n' \
@@ -210,7 +179,8 @@ def pretty_hex(bs):
 
 
 def pretty_print(mbt):
-    """ Return a readable string with the important parts of the telegram """
+    """ Return a readable string with the important parts of the telegram
+    :param mbt: mbus telegram """
     # TODO: Subunit, tariff, and storage is only interesting if there was a DIF, so they aren't 0 0 0.
     part_one = 'Address: {} (Hexadecimal)\n' \
                'ID: {}\n' \

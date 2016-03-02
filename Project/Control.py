@@ -31,13 +31,14 @@ def scan_secondary():
 
 
 def request_data(address):
-    """ Send REQ_UD2 to (address), store the response in the database. """
-    # print(ping(address))
-    # sleep2(1)
-    # if address > 250:
-    #    mbus_response = nm.send(MBus.req_ud2(0xFD))
-    # else:
-    mbus_response = nm.send(MBus.req_ud2(address))
+    """ Send REQ_UD2 to (address), store the response in the database.
+     :param address: int """
+    if address > 250:
+        ping(address)
+        sleep(11)
+        mbus_response = nm.send(MBus.req_ud2(address))
+    else:
+        mbus_response = nm.send(MBus.req_ud2(address))
     print('Sent: {}'.format(MBus.pretty_hex(MBus.req_ud2(address))))
     print('Received: {}'.format(MBus.pretty_hex(mbus_response)))
     if mbus_response:
@@ -50,7 +51,8 @@ def request_data(address):
 
 
 def ping(address):
-    """ Ping address and return the result, True or False. """
+    """ Ping address and return the result, True or False.
+    :param address: int """
     address = int(address)
     print('Sent: {}'.format(MBus.parse_telegram(MBus.snd_nke(address))))
     return MBus.parse_telegram(nm.send(MBus.snd_nke(address)))
@@ -87,10 +89,10 @@ if __name__ == '__main__':
                        '2. Request data from one unit.\n'
                        '3. Ping one unit.\n'
                        '4. Get addresses from file.\n'
-                       '5. Switch between sim/live\n'
-                       '6. Collect data from 1 to 101\n'
-                       '7. Set debugging level\n'
-                       '8. Exit\n'
+                       '5. Switch between sim/live.\n'
+                       '6. Collect data from 1 to 99.\n'
+                       '7. Set debugging level.\n'
+                       '8. Exit.\n'
                        ': ')
         if choice in ('1', 'scan', 's'):
             list_of_meter_units = scan()
@@ -109,7 +111,7 @@ if __name__ == '__main__':
             print("Remote host is now " + nm.remote_host)
         elif choice in ('6', 'data', 'd'):
             while True:
-                for i in range(1, 101):
+                for i in range(1, 99):
                     request_data(i)
                     sleep(11)
         elif choice in ('7', 'b'):
