@@ -7,6 +7,8 @@ import logging
 
 list_of_meter_units = []
 alive = 1
+# Debug stuff, maybe remove before we go live
+last_response = ''
 
 
 def scan():
@@ -35,7 +37,10 @@ def request_data(address):
      :param address: int """
     if address > 250:
         ping(address)
-        sleep(11)
+        print('Waiting for response from meter...')
+        for n in range(11, 1):
+            print('{}...\n'.format(n))
+            sleep(11)
         mbus_response = nm.send(MBus.req_ud2(address))
     else:
         mbus_response = nm.send(MBus.req_ud2(address))
@@ -46,8 +51,10 @@ def request_data(address):
         logging.debug(MBus.pretty_print(mbus_response))
         print('Storing stuff in database...')
         open_and_store(mbus_response)
+        return mbus_response
     else:
         print('Sent request to {}, but did not get a response.'.format(address))
+        return
 
 
 def ping(address):
@@ -92,13 +99,14 @@ if __name__ == '__main__':
                        '5. Switch between sim/live.\n'
                        '6. Collect data from 1 to 99.\n'
                        '7. Set debugging level.\n'
-                       '8. Exit.\n'
+                       '8. Analyse last response.\n'
+                       '0. Exit.\n'
                        ': ')
         if choice in ('1', 'scan', 's'):
             list_of_meter_units = scan()
         elif choice in ('2', 'request', 'r'):
             target = int(input('Which unit? '))
-            request_data(target)
+            last_response = request_data(target)
         elif choice in ('3', 'ping', 'p'):
             target = int(input('Which unit? '))
             print(ping(target))
@@ -123,7 +131,9 @@ if __name__ == '__main__':
             logging.getLogger().setLevel(logging.getLevelName(level))
             logging.info("Logging level is " +
                          logging.getLevelName(logging.getLogger().getEffectiveLevel()))
-        elif choice in ('8', 'exit', 'e'):
+        elif choice in ('8', 'anal', 'a'):
+            print(last_response)
+        elif choice in ('0', 'exit', 'e'):
             break
     print('Exiting, goodbye!')
     exit(0)

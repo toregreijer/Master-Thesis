@@ -12,7 +12,7 @@ class NetworkManager(object):
     remote_socket = socket
 
     def __init__(self):
-        self.remote_host = self.local_host
+        self.remote_host = self.mbus_master_address
         logging.debug('NetworkManager up and running.')
 
     def set_port(self, p):
