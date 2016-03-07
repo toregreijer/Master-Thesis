@@ -2,8 +2,6 @@ import MBus
 import csv
 import re
 
-a = '16326488'
-print(MBus.pretty_hex(MBus.rsp_ud()))
 
 # print(len('1234'))
 # print(bytes.fromhex('123405'))
