@@ -40,7 +40,7 @@ def request_data(address):
         print('Waiting for response from meter...')
         for n in range(10, 1, -1):
             print('{}...\n'.format(n))
-            sleep(11)
+            sleep(1)
         mbus_response = nm.send(MBus.req_ud2(address))
     else:
         mbus_response = nm.send(MBus.req_ud2(address))
