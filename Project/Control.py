@@ -38,7 +38,7 @@ def request_data(address):
     if address > 250:
         ping(address)
         print('Waiting for response from meter...')
-        for n in range(9, 1, -1):
+        for n in range(11, 1, -1):
             print('{}..'.format(n))
             sleep(1)
         mbus_response = nm.send(MBus.req_ud2(address))
