@@ -89,7 +89,6 @@ def decode_dife(dife):
 
 
 def decode_vif(vif):
-    # TODO: Fix date and time handling for code 13.
     vif = int(vif, 16)
     extension_bit = (vif & 0x80) != 0
     code = (vif & 0x7F) >> 3
@@ -165,9 +164,9 @@ def decode_vif(vif):
         elif nnn < 6:
             description = 'Time Point'
             if nnn == 4:
-                si_unit = 'Date, coded as type G.'
+                si_unit = 'Date, coded as type G. See MBus Documentation 8.2'
             else:
-                si_unit = 'Time & Date, coded as type F.'
+                si_unit = 'Time & Date, coded as type F. See MBus Documentation 8.2'
         elif nnn == 6:
             description = 'Units for H.C.A.'
             si_unit = 'dimensionless'
