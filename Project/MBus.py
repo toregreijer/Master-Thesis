@@ -116,7 +116,7 @@ def pretty_hex(bs):
 def pretty_print(mbt):
     """ Return a readable string with the important parts of the telegram
     :param mbt: mbus telegram """
-    # TODO: Subunit, tariff, and storage is only interesting if there was a DIF, so they aren't 0 0 0.
+    # Subunit, tariff, and storage is only interesting if there was a DIF, so they aren't 0 0 0.
     part_one = 'Address: {} (Hexadecimal)\n' \
                'ID: {}\n' \
                'Manufacturer: {}\n' \
