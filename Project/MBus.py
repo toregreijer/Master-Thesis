@@ -1,9 +1,8 @@
 import re
 from random import randint
-from MBusExtensions import decode_vif, decode_vife, decode_vife_a, decode_vife_b
+from MBusDecodingFunctions import *
 
 
-TELEGRAM_SIZE = 5
 TELEGRAM_FORMAT = ['SINGLE', 'SHORT', 'LONG']
 TELEGRAM_TYPE = ['ACK', 'SND_NKE', 'SND_UD', 'REQ_UD2', 'RSP_UD']
 ACK = b'\xE5'
@@ -83,76 +82,12 @@ def rsp_ud():
            b'\x04' + vib + data + cs + b'\x16'
 
 
-def decode_mf(b1, b2):
-        h = b2 + b1
-        name = \
-            chr(((int(h, 16) & 0xFC00)//1024)+64) + \
-            chr(((int(h, 16) & 0x3E0)//32)+64) + \
-            chr(((int(h, 16) & 0x1F)+64))
-        return name
-
-
-def decode_medium(m):
-    list_of_mediums = ['Other', 'Oil', 'Electricity', 'Gas',
-                       'Heat (Outlet)', 'Steam', 'Hot Water', 'Water',
-                       'Heat Cost Allocator', 'Compressed Air',
-                       'Cooling Load Meter (Outlet)', 'Cooling Load Meter (Inlet)',
-                       'Heat (Inlet)', 'Heat / Cooling Load Meter',
-                       'Bus / System', 'Unknown Medium', 'Reserved',
-                       'Reserved', 'Reserved', 'Reserved', 'Reserved',
-                       'Reserved', 'Cold Water', 'Dual Water',
-                       'Pressure', 'A/D Converter', 'Reserved']
-    n = int(m, 16)
-    if n >= 32:
-        return 'Reserved'
-    else:
-        return list_of_mediums[n]
-
-
-def decode_dif(dif):
-    # TODO: "Variable length" and "Special functions" code need further handling."
-    dif = int(dif, 16)
-    # Shows if there's a DIFE following this DIF.
-    extension_bit = (dif & 0x80) != 0
-    # Least significant bit of storage number. 0: Actual value, 1: historic value. Higher numbers requires DIFE.
-    lsb_of_storage = (dif & 0x40) >> 6
-    # The function field gives the type of data as follows.
-    function_field = (dif & 0x30) >> 4
-    function_codes = ['Instantaneous value', 'Maximum value', 'Minimum value', 'Value during error state']
-    # The data field shows how the data from the master must be interpreted in respect of length
-    # and coding. The following table contains the possible coding of the data field:
-    data_field = (dif & 0x0F)
-    data_codes = ['No data', '8bit Integer', '16bit Integer', '24bit Integer',
-                  '32bit Integer', '32bit Real', '48bit Integer', '64bit Integer',
-                  'Selection for Readout', '2 digit BCD', '4 digit BCD', '6 digit BCD',
-                  '8 digit BCD', 'Variable length', '12 digit BCD', 'Special functions']
-    data_length = [0, 1, 2, 3, 4, 4, 6, 8, 0, 1, 2, 3, 4, 1, 6, 0]
-
-    return extension_bit, lsb_of_storage, function_codes[function_field], \
-        data_codes[data_field], data_length[data_field]
-
-
-def decode_dife(dife):
-    # TODO: Parse the other 7 bits.
-    dife = int(dife, 16)
-    # Shows if there's another DIFE following this one.
-    extension_bit = (dife & 0x80) != 0
-    # Next most significant bit of the device subunit, from least to most, I think.
-    subunit = (dife & 0x40) >> 6
-    # Tariff code..?
-    tariff = (dife & 0x30) >> 4
-    # Next most significant bit of the storage number, from least to most, I think.
-    storage_bits = (dife & 0x0F)
-
-    return extension_bit, subunit, tariff, storage_bits
-
-
 def combine_value_and_unit(value, unit):
     # Check to see if a conversion is needed
     # If so, split the prefix and suffix,
     # returning the value multiplied with the prefix, and the suffix
     if unit:
-        if unit[0].isdigit():
+        if unit[0].isdigit() and type(value) == int:
             prefix = re.split(r'([a-zA-Z]+)', unit)[0]
             unit = unit.replace(prefix, '')
             return int(value*float(prefix)), unit
@@ -247,10 +182,8 @@ class MBusTelegram:
             elif self.fields['control'] == '08' or self.fields['control'] == '18':
                 self.type = 'RSP_UD'
 
-                # Manufacturer specific data present?
-                self.mdh = '0F' in self.hex_list[19:] or '1F' in self.hex_list[19:]
-
-                # Fixed data header
+                # Fixed data header, 12 bytes, like this:
+                # ID4:ID3:ID2:ID1:MF1:MF2:VR:MD:AC:ST:SG
                 d = dict(zip(self.fixed_data_header, self.hex_list[7:19]))
                 identification = d['id4'] + d['id3'] + d['id2'] + d['id1']
                 self.fields.update({'id': identification})
@@ -259,10 +192,29 @@ class MBusTelegram:
                 medium = decode_medium(d['medium'])
                 self.fields.update({'medium': medium})
 
+                # The rest of the telegram is user data, so we put this into a list,
+                # so we can take one byte at the time and analyse.
                 user_data_list = self.hex_list[19:-2]
+                # While the list isn't empty...
                 while user_data_list:
+                    """ DATA INFORMATION BLOCK """
                     # Read and parse the DIF
                     dif = user_data_list.pop(0)
+                    # First check to see if the DIF implies "Special Functions"
+                    if dif == '2F':  # Idle Filler (not to be interpreted), following byte = DIF
+                        continue
+                    elif dif == '0F' or dif == '1F':  # Manufacturer specific data structures, impossible to parse.
+                        # TODO: '1F' means more data follows in next telegram...
+                        mf_specific_data = ''
+                        while user_data_list:
+                            mf_specific_data += user_data_list.pop(0)
+                            # Pack it all into a block for easy storing in the database, this will be one row.
+                            user_data_block = ['', '', 'Manufacturer specific data', mf_specific_data, '', '', '', '']
+                            # Add this block to any other blocks contained in this MBus Telegram
+                            self.data_blocks.append(user_data_block)
+                            break
+                        break
+                    # If there is no special functions, proceed normally:
                     ext_d, lsb_of_storage, func, coding, length = decode_dif(dif)
                     # After the DIF is parsed, parse 0-10 DIFE's.
                     tmp_subunit = 0
@@ -285,37 +237,55 @@ class MBusTelegram:
                     final_tariff = tmp_tariff
                     final_storage = (tmp_storage << 1) + lsb_of_storage
 
+                    """ VALUE INFORMATION BLOCK """
                     # Read and parse the VIF
                     vif = user_data_list.pop(0)
                     ext_v, description, unit = decode_vif(vif)
-                    # After the VIF is parsed, parse 0-10 VIFE's.
-                    # Check to see if an extended VIF code needs to be read from the first VIFE
-                    if description.startswith('EXT_A'):
-                        vife = user_data_list.pop(0)
-                        ext_v, description, unit = decode_vife_a(vife)
-                    if description.startswith('EXT_B'):
-                        vife = user_data_list.pop(0)
-                        ext_v, description, unit = decode_vife_b(vife)
-                    # TODO: Handle Manufacturer specific coding, plain ascii, and other weird stuff
+                    # After the VIF is parsed, parse 0-10 VIFE's, beginning with checking to see
+                    # if an extended VIF code needs to be read from the first VIFE
                     while ext_v:
-                        vife = user_data_list.pop(0)
-                        ext_v, description, unit = decode_vife(vife)
+                        if description.startswith('EXT_A'):
+                            vife = user_data_list.pop(0)
+                            ext_v, description, unit = decode_vife_a(vife)
+                        elif description.startswith('EXT_B'):
+                            vife = user_data_list.pop(0)
+                            ext_v, description, unit = decode_vife_b(vife)
+                        elif description == 'Manufacturer specific':
+                            vife = user_data_list.pop(0)
+                            ext_v, ignore, ignore = decode_vife(vife)
+                        else:
+                            vife = user_data_list.pop(0)
+                            ext_v, add_on_description, unit = decode_vife(vife)
+                            if add_on_description != '':
+                                description = description + ' ' + add_on_description
 
-                    # After the data record header is done, parse the actual data.
+                    """ DATA BLOCK (After the data record header is done, parse the actual data.) """
+                    # If DIF returned coding == "Variable length", then look at the first byte of data,
+                    # and update the length variable and data parsing.
+                    if coding == 'Variable length':
+                        coding, length = decode_lvar(user_data_list.pop(0))
+
+                    # Read the specified number of bytes into a convenient variable
                     data_data = ''
                     for x in range(length):
                         data_data = user_data_list.pop(0) + data_data
+
+                    # Parse the data according to the coding specified, to get the actual value.
                     value = 0
                     if data_data:
                         if 'BCD' in coding:
                             value = int(data_data)
+                        elif 'ASCII' in coding:
+                            value = data_data
                         else:
                             value = int(data_data, 16)
-                    value, unit = combine_value_and_unit(value, unit)
-                    # TODO: Subunit, tariff, and storage is only interesting if there was a DIFE, so they aren't 0 0 0.
+                        # Do a little magic to get 10 & L from 100 & 0.1L (example)
+                        value, unit = combine_value_and_unit(value, unit)
+
+                    # Pack it all into a block for easy storing in the database, this will be one row.
                     user_data_block = [coding, func, description, value, unit,
                                        final_subunit, final_tariff, final_storage]
-                    # self.pretty_data_block(user_data_block)
+                    # Add this block to any other blocks contained in this MBus Telegram
                     self.data_blocks.append(user_data_block)
 
         assert self.type in TELEGRAM_TYPE

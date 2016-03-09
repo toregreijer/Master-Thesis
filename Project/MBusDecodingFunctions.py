@@ -1,13 +1,95 @@
-def decode_vif(vif):
-    # TODO: Extend the parsing to all other possibilities described below.
-    # TODO: Fix date and time handling for code 13.
-    # Addendum:
-    # VIF 0->7B as below.
-    # 7C or FC = ASCII string following, length in first byte
-    # FB or FD, code in VIFE to look up in 8.4.4
-    # 7E or FE, "any VIF", I think selection for readout kinda
-    # 7F or FF, manufacturer specific
+import logging
 
+
+def decode_mf(b1, b2):
+        h = b2 + b1
+        name = \
+            chr(((int(h, 16) & 0xFC00)//1024)+64) + \
+            chr(((int(h, 16) & 0x3E0)//32)+64) + \
+            chr(((int(h, 16) & 0x1F)+64))
+        return name
+
+
+def decode_medium(m):
+    list_of_mediums = ['Other', 'Oil', 'Electricity', 'Gas',
+                       'Heat (Outlet)', 'Steam', 'Hot Water', 'Water',
+                       'Heat Cost Allocator', 'Compressed Air',
+                       'Cooling Load Meter (Outlet)', 'Cooling Load Meter (Inlet)',
+                       'Heat (Inlet)', 'Heat / Cooling Load Meter',
+                       'Bus / System', 'Unknown Medium', 'Reserved',
+                       'Reserved', 'Reserved', 'Reserved', 'Reserved',
+                       'Reserved', 'Cold Water', 'Dual Water',
+                       'Pressure', 'A/D Converter', 'Reserved']
+    n = int(m, 16)
+    if n >= 32:
+        return 'Reserved'
+    else:
+        return list_of_mediums[n]
+
+
+def decode_lvar(first_byte):
+    # Variable Length: With data field = `1101b` several data types with variable length can be used.
+    # The length of the data is given after the DRH with the first byte of real data,
+    # which is here called LVAR (e.g. LVAR = 02h: ASCII string with two characters follows) ♣.
+    lvar = int(first_byte, 16)
+    if lvar < 0:
+        logging.error('LVAR less than zero!')
+        exit(1)
+    elif lvar < 192:  # 00h..BFh : ASCII string with LVAR characters
+        return 'ASCII', lvar
+    elif lvar < 208:  # C0h..CFh : positive BCD number with (LVAR - C0h) • 2 digits
+        return 'BCD', (lvar-192)
+    elif lvar < 224:  # D0h..DFH : negative BCD number with (LVAR - D0h) • 2 digits
+        return 'BCD', (lvar-208)
+    elif lvar < 240:  # E0h..EFh : binary number with (LVAR - E0h) bytes
+        return 'Binary Number', (lvar-224)
+    elif lvar < 251:  # F0h..FAh : float with (LVAR  - F0h) bytes [to be defined]
+        return 'Floating Point Number', (lvar-240)
+    elif lvar < 255:  # Reserved
+        return 'Reserved', lvar
+    else:
+        logging.error('WEIRD LVAR!')
+        exit(1)
+
+
+def decode_dif(dif):
+    dif = int(dif, 16)
+    # Shows if there's a DIFE following this DIF.
+    extension_bit = (dif & 0x80) != 0
+    # Least significant bit of storage number. 0: Actual value, 1: historic value. Higher numbers requires DIFE.
+    lsb_of_storage = (dif & 0x40) >> 6
+    # The function field gives the type of data as follows.
+    function_field = (dif & 0x30) >> 4
+    function_codes = ['Instantaneous value', 'Maximum value', 'Minimum value', 'Value during error state']
+    # The data field shows how the data from the master must be interpreted in respect of length
+    # and coding. The following table contains the possible coding of the data field:
+    data_field = (dif & 0x0F)
+    data_codes = ['No data', '8bit Integer', '16bit Integer', '24bit Integer',
+                  '32bit Integer', '32bit Real', '48bit Integer', '64bit Integer',
+                  'Selection for Readout', '2 digit BCD', '4 digit BCD', '6 digit BCD',
+                  '8 digit BCD', 'Variable length', '12 digit BCD', 'Special functions']
+    data_length = [0, 1, 2, 3, 4, 4, 6, 8, 0, 1, 2, 3, 4, 1, 6, 0]
+
+    return extension_bit, lsb_of_storage, function_codes[function_field], \
+        data_codes[data_field], data_length[data_field]
+
+
+def decode_dife(dife):
+    dife = int(dife, 16)
+    # Shows if there's another DIFE following this one.
+    extension_bit = (dife & 0x80) != 0
+    # Next most significant bit of the device subunit, from least to most, I think.
+    subunit = (dife & 0x40) >> 6
+    # Tariff code..?
+    tariff = (dife & 0x30) >> 4
+    # Next most significant bit of the storage number, from least to most, I think.
+    storage_bits = (dife & 0x0F)
+
+    return extension_bit, subunit, tariff, storage_bits
+
+
+def decode_vif(vif):
+    # TODO: Fix date and time handling for code 13.
     vif = int(vif, 16)
     extension_bit = (vif & 0x80) != 0
     code = (vif & 0x7F) >> 3
@@ -130,72 +212,68 @@ def decode_vif(vif):
 def decode_vife(vife):
     vife = int(vife, 16)
     extension_bit = (vife & 0x80) != 0
-    description = 'Reserved'
     si_unit = ''
     code = (vife & 0x7F)
-    nnnn = vife & 0b00001111    # Could write 15, but this is more visual :)
-    nnn = nnnn & 0b0111         # 7
-    nn = nnn & 0b011            # 3
     if code == 32:
         description = 'per second'
-    if code == 33:
+    elif code == 33:
         description = 'per minute'
-    if code == 34:
+    elif code == 34:
         description = 'per hour'
-    if code == 35:
+    elif code == 35:
         description = 'per day'
-    if code == 36:
+    elif code == 36:
         description = 'per week'
-    if code == 37:
+    elif code == 37:
         description = 'per month'
-    if code == 38:
+    elif code == 38:
         description = 'per year'
-    if code == 39:
+    elif code == 39:
         description = 'per revolution/measurement'
-    if code == 40:
+    elif code == 40:
         description = 'increment per input pulse on input channel 0'
-    if code == 41:
+    elif code == 41:
         description = 'increment per input pulse on input channel 1'
-    if code == 42:
+    elif code == 42:
         description = 'increment per output pulse on output channel 0'
-    if code == 43:
+    elif code == 43:
         description = 'increment per output pulse on output channel 1'
-    if code == 44:
+    elif code == 44:
         description = 'per liter'
-    if code == 45:
+    elif code == 45:
         description = 'per m^3'
-    if code == 46:
+    elif code == 46:
         description = 'per kg'
-    if code == 47:
+    elif code == 47:
         description = 'per K'
-    if code == 48:
+    elif code == 48:
         description = 'per KWh'
-    if code == 49:
+    elif code == 49:
         description = 'per GJ'
-    if code == 50:
+    elif code == 50:
         description = 'per kW'
-    if code == 51:
+    elif code == 51:
         description = 'per (Kelvin*liter)'
-    if code == 52:
+    elif code == 52:
         description = 'per V'
-    if code == 53:
+    elif code == 53:
         description = 'per A'
-    if code == 54:
+    elif code == 54:
         description = 'multiplied by sek'
-    if code == 55:
+    elif code == 55:
         description = 'multiplied by sek/V'
-    if code == 56:
+    elif code == 56:
         description = 'multiplied by sek/A'
-    if code == 57:
+    elif code == 57:
         description = 'start date(/time) of '
-    if code == 58:
+    elif code == 58:
         description = 'VIF contains uncorrected unit instead of corrected unit'
-    if code == 59:
+    elif code == 59:
         description = 'Accumulation only if positive contributions'
-    if code == 60:
+    elif code == 60:
         description = 'Accumulation of abs value only if negative contributions'
     else:
-        pass
+        description = ''
 
     return extension_bit, description, si_unit
 
