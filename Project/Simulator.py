@@ -61,29 +61,21 @@ if __name__ == '__main__':
             client_socket, address = nm.accept_connection()
             if client_socket is 0:
                 continue
-            # receive TELEGRAM_SIZE bytes
-            # print(client_socket)
             telegram = client_socket.recv(1024)
             while telegram:
-                # DEBUG OUTPUT
-                # print(telegram)
-                # for mu in meter_units:  # debug output, remove before release
-                    # print('Unit #{id}: {val}'.format(id=mu.get_id(), val=mu.get_value()))
-
-                # telegram = ':'.join('{:02X}'.format(c) for c in telegram)
                 mbt = MBus.parse_telegram(telegram)
                 print('Received: {t} from {src}'.format(t=mbt, src=(str(address))))
-
+                a = int(mbt.fields['address'], 16)
                 if mbt.type == 'SND_NKE':
-                    if 0 <= int(mbt.fields['address'], 16) < len(meter_units):
-                        # if meter_units[int(orders[2])]:
+                    if 0 <= a < len(meter_units):
                         print('Responded with E5\n')
                         client_socket.sendall(MBus.ACK)
                 elif mbt.type == 'SND_UD':
                     client_socket.sendall(MBus.ACK)
                 elif mbt.type == 'REQ_UD2':
-                    if 0 <= int(mbt.fields['address'], 16) < len(meter_units):
-                        response = MBus.rsp_ud()
+                    if 0 <= a < len(meter_units):
+                        v = meter_units[a].get_value()
+                        response = MBus.rsp_ud(v, a)
                         client_socket.sendall(response)
                 telegram = client_socket.recv(1024)
         except ConnectionResetError:

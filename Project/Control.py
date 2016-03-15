@@ -15,7 +15,7 @@ def scan():
     """ Ping all addresses and return a list of those that respond """
     list_of_addresses = []
     for x in range(1, 250):
-        sleep(10)
+        # sleep(10)
         if ping(x):
             list_of_addresses.append(x)
             print('Discovered unit at address {}!'.format(x))
@@ -118,7 +118,10 @@ if __name__ == '__main__':
             nm.switch_remote_host()
             print("Remote host is now " + nm.remote_host)
         elif choice in ('6', 'data', 'd'):
-            while True:
+            if list_of_meter_units:
+                for i in list_of_meter_units:
+                    request_data(i)
+            else:
                 for i in range(1, 99):
                     request_data(i)
                     sleep(11)

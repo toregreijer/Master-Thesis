@@ -1,7 +1,7 @@
 import MBus
 import csv
 import re
-
+"""
 tgram = bytes.fromhex('68:85:85:68:08:00:72:03:37:12:00:42:04:20:02:F4:00:00:00:\
         0E:84:00:28:33:58:02:00:00:\
         04:FF:A0:15:00:00:00:00:\
@@ -15,17 +15,21 @@ tgram = bytes.fromhex('68:85:85:68:08:00:72:03:37:12:00:42:04:20:02:F4:00:00:00:
         0D:FD:8E:00:07:30:2E:39:31:2E:31:42:\
         0D:FF:AA:00:0B:30:30:31:2D:33:31:31:20:33:32:42:\
         1F:07:16'.replace(':', ''))
+"""
 
-
-for x in MBus.parse_telegram(tgram).data_blocks:
-    print(x)
 # print(len('1234'))
 # print(bytes.fromhex('123405'))
 # print(bytes.fromhex(MBus.rev(str(53412))))
 # print(sum(bytes.fromhex('9988FF')))
 # print(sum(bytes.fromhex(MBus.rev('9988FF'))))
 # foo = bytes.fromhex(str(hex(24))[2:4])  # stupid, use below instead
+# print(hex(1000)[2:])
+str_from_int = bytes.fromhex(MBus.rev(format(15, '08X')))
+# print(str_from_int)
 # bytes_from_hex = bytes.fromhex(format(12, '02X'))           # == b'\x0c'
+print(MBus.parse_telegram(MBus.rsp_ud(100, 12)))
+print(MBus.pretty_print(MBus.parse_telegram(MBus.rsp_ud(100, 12))))
+# bytes_from_hex = bytes.fromhex(str_from_int)
 # manual = b'\x10\x40' + bytes_from_hex + b'\x01'  # b'\x10@\x0c\x...
 # readable = ':'.join('{:02X}'.format(x) for x in manual)     # 10:40:0C:86:80:95:49
 # list_of_hexes = [hex(h) for h in list(manual)]  # ['0x10', '0x40', '0xc', '0x86', '0x80', '0x95', '0x49']

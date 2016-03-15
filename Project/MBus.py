@@ -60,20 +60,30 @@ def req_ud2(a):
         return b'\x10\x7B' + hex_addr + hex_checksum + b'\x16'
 
 
-def rsp_ud():
+def rsp_ud(value=1, addr=1):
     """
+    :param value: the value to pack into the response
+    :param addr: address of the simulated unit
     VARIABLE DATA BLOCK
     BITS!
     DIF = 04 = 0000 0100 = not ext, LSB of storage is 0, function is instantaneous value, data is 32bit int.
     VIB = no ext, then 7 random bits, from 000 0000 to 0110 1011 (int 107)
     DATA = 32bit int = 4 random bytes
     """
-    address = random_byte()
-    unit_id = random_byte(153) + random_byte(153) + random_byte(153) + random_byte(153)
-    manufacturer = random_byte() + random_byte()
-    medium = random_byte(10)
-    data = random_byte() + random_byte() + random_byte() + random_byte()
-    vib = random_byte(107)
+    if value != 1:
+        data = bytes.fromhex(rev(format(value, '08X')))  # Data = string(hex(value))[2:] <--(utan'0x'alltså)
+        address = b(addr)
+        unit_id = address+b'\x00\x00\x00'
+        manufacturer = b'\x64\x29'
+        medium = b'\x02'  # Electricity
+        vib = b'\x03'  # 10^((3)-3) Wh
+    else:
+        address = random_byte()
+        unit_id = random_byte(153) + random_byte(153) + random_byte(153) + random_byte(153)
+        manufacturer = random_byte() + random_byte()
+        medium = random_byte(10)
+        data = random_byte() + random_byte() + random_byte() + random_byte()
+        vib = random_byte(107)
     cs = b(sum(b'\x08' + address + b'\x72' + unit_id + manufacturer + b'\x01' +
                medium + b'\x01\x00\x00\x00' + b'\x04' + vib + data))
 
