@@ -4,7 +4,7 @@ import logging
 
 
 class NetworkManager(object):
-    port = 300
+    port = 13000
     mbus_master_address = '192.168.1.41'
     local_host = '127.0.0.1'
     remote_host = ''
