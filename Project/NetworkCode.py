@@ -4,7 +4,7 @@ import logging
 
 
 class NetworkManager(object):
-    port = 13000
+    port = 300
     mbus_master_address = '192.168.1.41'
     local_host = '127.0.0.1'
     remote_host = ''
@@ -63,7 +63,7 @@ class NetworkManager(object):
     def open_server_socket(self):
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_socket.bind((self.mbus_master_address, self.port))
+            self.server_socket.bind((self.local_host, self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)
         except socket.error:
