@@ -11,7 +11,8 @@ class NetworkManager(object):
     server_socket = socket
     remote_socket = socket
 
-    def __init__(self):
+    def __init__(self, port_arg=300):
+        self.port = port_arg
         self.remote_host = self.mbus_master_address
         logging.debug('NetworkManager up and running.')
 
@@ -63,6 +64,9 @@ class NetworkManager(object):
     def open_server_socket(self):
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            print(self.server_socket.gethostbyaddr('192.168.1.175'))
+            print(self.server_socket.gethostname())
+            print(self.server_socket.gethostbyname('netbook.lan'))
             self.server_socket.bind((self.local_host, self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)

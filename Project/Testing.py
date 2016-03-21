@@ -1,4 +1,6 @@
 import MBus
+import logging
+import socket
 import csv
 import re
 """
@@ -17,6 +19,22 @@ tgram = bytes.fromhex('68:85:85:68:08:00:72:03:37:12:00:42:04:20:02:F4:00:00:00:
         1F:07:16'.replace(':', ''))
 """
 
+s = socket
+local_host = '127.0.0.1'
+port = 12345
+try:
+    print(s.gethostbyaddr('192.168.1.175'))
+    print(s.gethostbyname('netbook.lan'))
+    print(s.gethostbyname_ex('netbook.lan'))
+    print(s.gethostname())
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((local_host, port))
+    s.listen(10)
+    s.setblocking(1)
+except socket.error:
+    logging.error('General error opening server socket! Check NetworkCode!')
+    exit(1)
+
 # print(len('1234'))
 # print(bytes.fromhex('123405'))
 # print(bytes.fromhex(MBus.rev(str(53412))))
@@ -24,11 +42,11 @@ tgram = bytes.fromhex('68:85:85:68:08:00:72:03:37:12:00:42:04:20:02:F4:00:00:00:
 # print(sum(bytes.fromhex(MBus.rev('9988FF'))))
 # foo = bytes.fromhex(str(hex(24))[2:4])  # stupid, use below instead
 # print(hex(1000)[2:])
-str_from_int = bytes.fromhex(MBus.rev(format(15, '08X')))
+# str_from_int = bytes.fromhex(MBus.rev(format(15, '08X')))
 # print(str_from_int)
 # bytes_from_hex = bytes.fromhex(format(12, '02X'))           # == b'\x0c'
-print(MBus.parse_telegram(MBus.rsp_ud(100, 12)))
-print(MBus.pretty_print(MBus.parse_telegram(MBus.rsp_ud(100, 12))))
+# print(MBus.parse_telegram(MBus.rsp_ud(100, 12)))
+# print(MBus.pretty_print(MBus.parse_telegram(MBus.rsp_ud(100, 12))))
 # bytes_from_hex = bytes.fromhex(str_from_int)
 # manual = b'\x10\x40' + bytes_from_hex + b'\x01'  # b'\x10@\x0c\x...
 # readable = ':'.join('{:02X}'.format(x) for x in manual)     # 10:40:0C:86:80:95:49
