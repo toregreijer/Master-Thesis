@@ -16,8 +16,8 @@ class NetworkManager(object):
         print(socket.gethostbyaddr('192.168.1.175'))
         print(socket.gethostbyaddr('192.168.1.78'))
         print(socket.gethostname())
-        print(socket.getaddrinfo('netbook', 12345))
-        print(socket.gethostbyname('netbook'))
+        print(socket.getaddrinfo('netbook.lan', 12345))
+        print(socket.gethostbyname('netbook.lan'))
         print(socket.gethostbyname(socket.gethostname()))
         self.local_host = socket.gethostbyname(socket.gethostname())
         self.remote_host = self.netbook_address
