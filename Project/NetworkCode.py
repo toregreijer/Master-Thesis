@@ -15,11 +15,11 @@ class NetworkManager(object):
     def __init__(self):
         print(socket.gethostbyaddr('192.168.1.175'))
         print(socket.gethostbyaddr('192.168.1.78'))
-        print(socket.gethostname())
+        print(socket.getfqdn())
         print(socket.getaddrinfo('netbook.lan', 12345))
         print(socket.gethostbyname('netbook.lan'))
         print(socket.gethostbyname(socket.gethostname()))
-        self.local_host = socket.gethostbyname(socket.gethostname())
+        self.local_host = socket.gethostbyname(socket.getfqdn())
         self.remote_host = self.netbook_address
         logging.debug('NetworkManager up and running.')
 
