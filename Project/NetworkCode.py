@@ -6,14 +6,15 @@ import logging
 class NetworkManager(object):
     port = 300
     mbus_master_address = '192.168.1.41'
+    netbook_address = '192.168.1.175'
     local_host = '127.0.0.1'
     remote_host = ''
     server_socket = socket
     remote_socket = socket
 
-    def __init__(self, port_arg=300):
-        self.port = port_arg
-        self.remote_host = self.mbus_master_address
+    def __init__(self):
+        self.local_host = socket.gethostname()
+        self.remote_host = self.netbook_address
         logging.debug('NetworkManager up and running.')
 
     def set_port(self, p):
@@ -61,15 +62,11 @@ class NetworkManager(object):
             client_socket.setblocking(1)
             return client_socket, addr
 
-    def open_server_socket(self):
+    def open_server_socket(self,  port_arg=300):
+        self.port = port_arg
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            print(socket.gethostbyaddr('192.168.1.175'))
-            print(socket.gethostbyaddr('192.168.1.78'))
-            print(socket.gethostname())
-            print(socket.gethostbyname('netbook'))
-            print(socket.gethostbyname('Atena'))
-            self.server_socket.bind((self.local_host, self.port))
+            self.server_socket.bind((socket.gethostname(), self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)
         except socket.error:

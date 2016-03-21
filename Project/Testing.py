@@ -18,23 +18,12 @@ tgram = bytes.fromhex('68:85:85:68:08:00:72:03:37:12:00:42:04:20:02:F4:00:00:00:
         0D:FF:AA:00:0B:30:30:31:2D:33:31:31:20:33:32:42:\
         1F:07:16'.replace(':', ''))
 """
-
-s = socket
-local_host = '127.0.0.1'
-port = 12345
-try:
-    print(s.gethostbyaddr('192.168.1.175'))
-    print(s.gethostbyname('netbook.lan'))
-    print(s.gethostbyname_ex('netbook.lan'))
-    print(s.gethostname())
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((local_host, port))
-    s.listen(10)
-    s.setblocking(1)
-except socket.error:
-    logging.error('General error opening server socket! Check NetworkCode!')
-    exit(1)
-
+# print(socket.gethostbyaddr('192.168.1.175'))
+# print(socket.gethostbyaddr('192.168.1.78'))
+# print(socket.gethostname())
+# print(socket.getaddrinfo('netbook', 12345))
+# print(socket.gethostbyname('netbook'))
+# print(socket.gethostbyname(socket.gethostname()))
 # print(len('1234'))
 # print(bytes.fromhex('123405'))
 # print(bytes.fromhex(MBus.rev(str(53412))))
