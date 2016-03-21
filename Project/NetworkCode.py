@@ -16,9 +16,8 @@ class NetworkManager(object):
         print(socket.gethostbyaddr('192.168.1.175'))
         print(socket.gethostbyaddr('192.168.1.78'))
         print(socket.getfqdn())
-        print(socket.getaddrinfo('netbook.lan', 12345))
+        print(socket.gethostbyname(socket.getfqdn()))
         print(socket.gethostbyname('netbook.lan'))
-        print(socket.gethostbyname(socket.gethostname()))
         self.local_host = socket.gethostbyname(socket.getfqdn())
         self.remote_host = self.netbook_address
         logging.debug('NetworkManager up and running.')
@@ -72,7 +71,7 @@ class NetworkManager(object):
         self.port = port_arg
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_socket.bind((socket.gethostname(), self.port))
+            self.server_socket.bind((socket.getfqdn(), self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)
         except socket.error:
