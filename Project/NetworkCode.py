@@ -64,9 +64,11 @@ class NetworkManager(object):
     def open_server_socket(self):
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            print(self.server_socket.gethostbyaddr('192.168.1.175'))
-            print(self.server_socket.gethostname())
-            print(self.server_socket.gethostbyname('netbook.lan'))
+            print(socket.gethostbyaddr('192.168.1.175'))
+            print(socket.gethostbyaddr('192.168.1.78'))
+            print(socket.gethostname())
+            print(socket.gethostbyname('netbook'))
+            print(socket.gethostbyname('Atena'))
             self.server_socket.bind((self.local_host, self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)
