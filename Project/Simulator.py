@@ -46,7 +46,7 @@ if __name__ == '__main__':
     else:
         print('Input not recognized as digits, using default value (1) instead.')
     nm = NetworkManager()
-    nm.open_server_socket(12345)
+    nm.open_server_socket()
     print('Listening for incoming connections on port {} at address {}'.format(str(nm.port), nm.local_host))
     meter_units = []
     print('Starting {NU} meter units'.format(NU=NUM_UNITS))

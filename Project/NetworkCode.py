@@ -4,7 +4,7 @@ import logging
 
 
 class NetworkManager(object):
-    port = 300
+    port = 12345
     mbus_master_address = '192.168.1.41'
     netbook_address = '192.168.1.175'
     local_host = '127.0.0.1'
@@ -13,12 +13,6 @@ class NetworkManager(object):
     remote_socket = socket
 
     def __init__(self):
-        print(socket.gethostbyaddr('192.168.1.175'))
-        print(socket.gethostbyaddr('192.168.1.78'))
-        print(socket.getfqdn())
-        print(socket.gethostbyname(socket.getfqdn()))
-        print(socket.gethostbyname('netbook.lan'))
-        self.local_host = socket.gethostbyname(socket.getfqdn())
         self.remote_host = self.netbook_address
         logging.debug('NetworkManager up and running.')
 
@@ -67,11 +61,10 @@ class NetworkManager(object):
             client_socket.setblocking(1)
             return client_socket, addr
 
-    def open_server_socket(self,  port_arg=300):
-        self.port = port_arg
+    def open_server_socket(self):
         try:
             self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_socket.bind((socket.getfqdn(), self.port))
+            self.server_socket.bind(('netbook.lan', self.port))
             self.server_socket.listen(10)
             self.server_socket.setblocking(1)
         except socket.error:
